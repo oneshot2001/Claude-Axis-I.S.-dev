@@ -1,7 +1,7 @@
 /**
  * dlpu_basic.c
  *
- * Simple time-division based DLPU coordination for AXION POC
+ * Simple time-division based DLPU coordination for Axis I.S. POC
  * Prevents multiple cameras from accessing DLPU simultaneously
  */
 

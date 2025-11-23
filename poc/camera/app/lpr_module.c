@@ -1,5 +1,5 @@
 /**
- * AXION LPR (License Plate Recognition) Module
+ * Axis I.S. LPR (License Plate Recognition) Module
  *
  * Detects vehicles → Extracts plate region → Claude Vision API → Plate text
  * Priority: 20 (runs after detection)
@@ -211,7 +211,7 @@ static int lpr_init(ModuleContext* ctx, cJSON* config) {
     syslog(LOG_INFO, "[%s] Initialized (enabled=%d, interval=%d)\n",
            MODULE_NAME, state->enabled, state->process_interval);
 
-    return AXION_MODULE_SUCCESS;
+    return AXIS_IS_MODULE_SUCCESS;
 }
 
 /**
@@ -220,13 +220,13 @@ static int lpr_init(ModuleContext* ctx, cJSON* config) {
 static int lpr_process(ModuleContext* ctx, FrameData* frame) {
     LPRState* state = (LPRState*)ctx->module_state;
     if (!state || !state->enabled) {
-        return AXION_MODULE_SKIP;
+        return AXIS_IS_MODULE_SKIP;
     }
 
     // Process interval throttling
     state->frame_counter++;
     if (state->frame_counter % state->process_interval != 0) {
-        return AXION_MODULE_SKIP;
+        return AXIS_IS_MODULE_SKIP;
     }
 
     // Check for vehicle detections
@@ -289,7 +289,7 @@ static int lpr_process(ModuleContext* ctx, FrameData* frame) {
         cJSON_Delete(plates_array);
     }
 
-    return AXION_MODULE_SUCCESS;
+    return AXIS_IS_MODULE_SUCCESS;
 }
 
 /**

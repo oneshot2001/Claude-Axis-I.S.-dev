@@ -1,5 +1,5 @@
 /**
- * AXION Module Utility Functions
+ * Axis I.S. Module Utility Functions
  *
  * Helper functions for module implementations
  */

@@ -1,4 +1,4 @@
-# ARTPEC-9 / AXIS OS 12 Impact Analysis for AXION POC
+# ARTPEC-9 / AXIS OS 12 Impact Analysis for Axis I.S. POC
 
 **Date:** November 23, 2025  
 **Status:** 🔴 CRITICAL - Requires Decision
@@ -144,7 +144,7 @@ Camera (Bare Metal)
 
 ---
 
-## Specific AXION Impacts
+## Specific Axis I.S. Impacts
 
 ### 1. Claude Integration Location
 
@@ -195,7 +195,7 @@ let result = model.infer(&buffer).await?;
 // Automatic cleanup via Drop trait
 ```
 
-**Impact:** Rust eliminates entire class of memory leak bugs (VDO buffer reference counting issues from AXION_CRITICAL_IMPLEMENTATION_GUIDE.md)
+**Impact:** Rust eliminates entire class of memory leak bugs (VDO buffer reference counting issues from Axis I.S._CRITICAL_IMPLEMENTATION_GUIDE.md)
 
 ### 4. MQTT Publishing
 

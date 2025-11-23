@@ -2,12 +2,12 @@
   "schemaVersion": "1.6",
   "acapPackageConf": {
     "setup": {
-      "appName": "axion_poc",
-      "vendor": "AXION",
+      "appName": "axis_is_poc",
+      "vendor": "Axis I.S.",
       "version": "1.0.0",
       "embeddedSdkVersion": "3.0",
       "architecture": "aarch64",
-      "friendlyName": "AXION POC - Edge AI Surveillance (Native)",
+      "friendlyName": "Axis I.S. POC - Edge AI Surveillance (Native)",
       "runMode": "respawn",
       "settingsFile": "settings/settings.json"
     },

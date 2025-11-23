@@ -1,7 +1,7 @@
 /**
  * vdo_handler.c
  *
- * VDO stream implementation for AXION POC
+ * VDO stream implementation for Axis I.S. POC
  */
 
 #include <stdio.h>

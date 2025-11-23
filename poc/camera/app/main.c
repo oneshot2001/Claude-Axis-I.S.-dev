@@ -1,5 +1,5 @@
 /**
- * AXION POC - Main Application (Modular Architecture)
+ * Axis I.S. POC - Main Application (Modular Architecture)
  *
  * Proof of Concept for edge-cloud AI camera surveillance system
  *
@@ -31,7 +31,7 @@
 #include "MQTT.h"
 #include "core.h"
 
-#define APP_PACKAGE "axion_poc"
+#define APP_PACKAGE "axis_is_poc"
 #define APP_VERSION "2.0.0"
 
 #define LOG(fmt, args...)    { syslog(LOG_INFO, fmt, ## args); printf(fmt, ## args);}
@@ -247,7 +247,7 @@ void cleanup(void) {
  */
 int main(int argc, char* argv[]) {
     openlog(APP_PACKAGE, LOG_PID|LOG_CONS, LOG_USER);
-    LOG("====== Starting AXION POC v%s (Modular) ======\n", APP_VERSION);
+    LOG("====== Starting Axis I.S. POC v%s (Modular) ======\n", APP_VERSION);
 
     gettimeofday(&app_start_time, NULL);
 
@@ -319,13 +319,13 @@ int main(int argc, char* argv[]) {
 
     // Cleanup and exit
     cleanup();
-    LOG("====== AXION POC terminated ======\n");
+    LOG("====== Axis I.S. POC terminated ======\n");
     closelog();
     return 0;
 
 error:
     cleanup();
-    LOG_ERR("====== AXION POC failed to start ======\n");
+    LOG_ERR("====== Axis I.S. POC failed to start ======\n");
     closelog();
     return 1;
 }

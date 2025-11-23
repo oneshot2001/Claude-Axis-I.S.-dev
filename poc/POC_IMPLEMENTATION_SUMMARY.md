@@ -1,4 +1,4 @@
-# AXION POC - Implementation Summary
+# Axis I.S. POC - Implementation Summary
 
 **Created:** November 23, 2025
 **Version:** 1.0.0
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document provides a complete Proof of Concept implementation for the AXION edge-cloud AI surveillance platform. All necessary files have been created in the `poc/` directory structure.
+This document provides a complete Proof of Concept implementation for the Axis I.S. edge-cloud AI surveillance platform. All necessary files have been created in the `poc/` directory structure.
 
 ### POC Objectives Addressed
 
@@ -572,7 +572,7 @@ void Dlpu_Cleanup(DlpuContext* ctx) {
 
 ### Makefile
 ```makefile
-TARGET = axion_poc
+TARGET = axis_is_poc
 PKGS = gio-2.0 vdostream larod
 CFLAGS += -Wall -Wextra -O2
 
@@ -599,11 +599,11 @@ clean:
   "schemaVersion": "1.6",
   "acapPackageConf": {
     "setup": {
-      "appName": "axion_poc",
-      "vendor": "AXION",
+      "appName": "axis_is_poc",
+      "vendor": "Axis I.S.",
       "version": "1.0.0",
       "architecture": "aarch64",
-      "friendlyName": "AXION POC",
+      "friendlyName": "Axis I.S. POC",
       "runMode": "respawn",
       "runOptions": "--privileged",
       "settingsFile": "settings/settings.json"
@@ -652,7 +652,7 @@ import time
 from datetime import datetime
 import aiomqtt
 
-class AXIONSubscriber:
+class Axis I.S.Subscriber:
     def __init__(self, broker="localhost", port=1883):
         self.broker = broker
         self.port = port
@@ -664,10 +664,10 @@ class AXIONSubscriber:
         print(f"Connecting to MQTT broker at {self.broker}:{self.port}")
 
         async with aiomqtt.Client(self.broker, self.port) as client:
-            await client.subscribe("axion/camera/+/metadata")
-            await client.subscribe("axion/camera/+/status")
+            await client.subscribe("axis-is/camera/+/metadata")
+            await client.subscribe("axis-is/camera/+/status")
 
-            print("Subscribed to AXION topics. Waiting for messages...\n")
+            print("Subscribed to Axis I.S. topics. Waiting for messages...\n")
 
             async for message in client.messages:
                 self.handle_message(message)
@@ -721,7 +721,7 @@ class AXIONSubscriber:
         print(f"📡 {camera_id}: {state} at {timestamp}")
 
 if __name__ == "__main__":
-    subscriber = AXIONSubscriber(broker="192.168.1.50")
+    subscriber = Axis I.S.Subscriber(broker="192.168.1.50")
     asyncio.run(subscriber.run())
 ```
 
@@ -782,7 +782,7 @@ volumes:
    ```
 
 5. **Verify operation**:
-   - Check camera status: `curl http://192.168.1.101/local/axion/status`
+   - Check camera status: `curl http://192.168.1.101/local/axis-is/status`
    - Monitor MQTT messages in cloud subscriber
    - Verify FPS ≥ 5
    - Check memory usage stays < 300MB

@@ -8,7 +8,7 @@
 
 ## Summary
 
-The AXION POC has been successfully converted from a Docker-based ACAP to a native binary ACAP. This ensures compatibility with AXIS OS 12 while maintaining backwards compatibility with AXIS OS 11.
+The Axis I.S. POC has been successfully converted from a Docker-based ACAP to a native binary ACAP. This ensures compatibility with AXIS OS 12 while maintaining backwards compatibility with AXIS OS 11.
 
 ## Changes Made
 
@@ -147,8 +147,8 @@ Before deployment, verify:
 After deployment (OS 12 camera):
 
 - [ ] Package uploads successfully
-- [ ] Application installs: `eap-list | grep axion_poc`
-- [ ] Application starts: `systemctl status axion_poc`
+- [ ] Application installs: `eap-list | grep axis_is_poc`
+- [ ] Application starts: `systemctl status axis_is_poc`
 - [ ] VDO stream initializes (check logs)
 - [ ] Larod model loads (check logs)
 - [ ] MQTT connects and publishes
@@ -176,12 +176,12 @@ cd /Users/matthewvisher/Documents/AI\ Planning\ and\ Projects/Make\ ACAP\ Claude
 2. Source code compiled to ARM64 binary
 3. Settings files embedded
 4. Package created as `.eap` file
-5. Output: `axion_poc_1_0_0_aarch64.eap` (~5-10MB)
+5. Output: `axis_is_poc_1_0_0_aarch64.eap` (~5-10MB)
 
 ### Expected Output
 
 ```
-====== Building AXION POC ACAP (Native Binary) ======
+====== Building Axis I.S. POC ACAP (Native Binary) ======
 Architecture: aarch64
 SDK Version: 12.2.0
 Target: AXIS OS 12 (Native Binary)
@@ -192,7 +192,7 @@ Compiling native binary using ACAP SDK container...
 
 ====== Build Complete ======
 Package Type: Native Binary (AXIS OS 12 compatible)
--rw-r--r--  1 user  staff   8.2M Nov 23 15:30 axion_poc_1_0_0_aarch64.eap
+-rw-r--r--  1 user  staff   8.2M Nov 23 15:30 axis_is_poc_1_0_0_aarch64.eap
 
 Package size: 8.2M (native binary - much smaller than Docker-based ~100MB)
 
@@ -228,8 +228,8 @@ cd /Users/matthewvisher/Documents/AI\ Planning\ and\ Projects/Make\ ACAP\ Claude
    cd /Users/matthewvisher/Documents/AI\ Planning\ and\ Projects/Make\ ACAP\ Claude/poc/camera
    scp *.eap root@<camera-ip>:/tmp/
    ssh root@<camera-ip>
-   eap-install /tmp/axion_poc_1_0_0_aarch64.eap
-   systemctl start axion_poc
+   eap-install /tmp/axis_is_poc_1_0_0_aarch64.eap
+   systemctl start axis_is_poc
    ```
 
 ## Performance Expectations
@@ -288,7 +288,7 @@ axisecp/acap-native-sdk:12.2.0-aarch64-ubuntu24.04
 ```
 AXIS OS 12
  └─ systemd
-     └─ axion_poc (native binary)
+     └─ axis_is_poc (native binary)
          ├─ VDO streaming (native API)
          ├─ Larod inference (native API)
          └─ MQTT client (native library)
@@ -434,8 +434,8 @@ Complete documentation available:
 4. **Verify functionality:**
    ```bash
    ssh root@<camera-ip>
-   systemctl status axion_poc
-   journalctl -u axion_poc -f
+   systemctl status axis_is_poc
+   journalctl -u axis_is_poc -f
    ```
 
 ### Short-term (Validation)
@@ -491,7 +491,7 @@ Complete documentation available:
 
 ## Conclusion
 
-The AXION POC has been successfully converted to a native binary ACAP:
+The Axis I.S. POC has been successfully converted to a native binary ACAP:
 
 **Completed:**
 - Modified build process for native compilation
@@ -519,6 +519,6 @@ The AXION POC has been successfully converted to a native binary ACAP:
 ---
 
 **Conversion Completed:** November 23, 2025
-**Converted By:** AXION Development Team
+**Converted By:** Axis I.S. Development Team
 **AXIS OS 12 Compatible:** YES
 **Production Ready:** Pending hardware validation

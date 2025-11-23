@@ -1,4 +1,4 @@
-# AXION POC - Testing Guide
+# Axis I.S. POC - Testing Guide
 
 **Version:** 1.0.0
 **Last Updated:** November 23, 2025
@@ -160,7 +160,7 @@ cd camera
 # Building Docker image...
 # Extracting .eap file...
 # Build Complete
-# axion_poc_1.0.0_aarch64.eap
+# axis_is_poc_1.0.0_aarch64.eap
 ```
 
 Verify:
@@ -178,7 +178,7 @@ cd ..
 
 Expected output:
 ```
-====== AXION POC Deployment ======
+====== Axis I.S. POC Deployment ======
 Testing connectivity...
 ✓ Upload successful
 ✓ Application started
@@ -196,7 +196,7 @@ Testing connectivity...
 # Check via camera web interface
 # Navigate to: http://192.168.1.101
 # Go to: Apps → Installed apps
-# Look for: "AXION POC" (should be "Started")
+# Look for: "Axis I.S. POC" (should be "Started")
 
 # Or via API
 curl -u root:pass http://192.168.1.101/axis-cgi/applications/list.cgi
@@ -208,11 +208,11 @@ curl -u root:pass http://192.168.1.101/axis-cgi/applications/list.cgi
 
 ```bash
 # Status endpoint
-curl -s -u root:pass http://192.168.1.101/local/axion_poc/status | jq
+curl -s -u root:pass http://192.168.1.101/local/axis_is_poc/status | jq
 
 # Expected response:
 {
-  "app": "axion_poc",
+  "app": "axis_is_poc",
   "version": "1.0.0",
   "camera_id": "axis-camera-001",
   "uptime_seconds": 123,
@@ -227,7 +227,7 @@ curl -s -u root:pass http://192.168.1.101/local/axion_poc/status | jq
 
 ```bash
 # Metadata endpoint
-curl -s -u root:pass http://192.168.1.101/local/axion_poc/metadata | jq
+curl -s -u root:pass http://192.168.1.101/local/axis_is_poc/metadata | jq
 
 # Expected response:
 {
@@ -259,11 +259,11 @@ curl -s -u root:pass http://192.168.1.101/local/axion_poc/metadata | jq
 ### Test 3: Check Camera Logs
 
 ```bash
-ssh root@192.168.1.101 "tail -n 50 /var/log/messages | grep axion_poc"
+ssh root@192.168.1.101 "tail -n 50 /var/log/messages | grep axis_is_poc"
 ```
 
 Look for:
-- ✓ "Starting AXION POC v1.0.0"
+- ✓ "Starting Axis I.S. POC v1.0.0"
 - ✓ "VDO stream initialized: 416x416 @ 10 FPS"
 - ✓ "Larod initialized"
 - ✓ "MQTT: Connected successfully"
@@ -284,9 +284,9 @@ python mqtt_subscriber.py --broker localhost
 
 Expected output (within 10 seconds):
 ```
-AXION POC Cloud Subscriber v1.0
+Axis I.S. POC Cloud Subscriber v1.0
 Connecting to MQTT broker at localhost:1883
-✓ Subscribed to AXION topics
+✓ Subscribed to Axis I.S. topics
 Waiting for messages...
 
 📡 [axis-camera-001] ONLINE at 12:34:56 (v1.0.0)
@@ -342,11 +342,11 @@ Look for "Total=XYZms" in logs.
 
 ```bash
 # Initial memory
-ssh root@192.168.1.101 "top -b -n 1 | grep axion_poc"
+ssh root@192.168.1.101 "top -b -n 1 | grep axis_is_poc"
 
 # Wait 1 hour, check again
 sleep 3600
-ssh root@192.168.1.101 "top -b -n 1 | grep axion_poc"
+ssh root@192.168.1.101 "top -b -n 1 | grep axis_is_poc"
 
 # Compare VSZ and RSS columns
 ```
@@ -381,7 +381,7 @@ Record results in POC_SUCCESS_CRITERIA.md
 ```bash
 # Point camera at static scene
 # Monitor motion scores (should be low, <0.1)
-curl -s -u root:pass http://192.168.1.101/local/axion_poc/metadata | jq '.motion.score'
+curl -s -u root:pass http://192.168.1.101/local/axis_is_poc/metadata | jq '.motion.score'
 ```
 
 **Test Movement:**
@@ -465,13 +465,13 @@ while true; do
   TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
   # Get memory usage
-  MEM=$(ssh root@$CAMERA_IP "top -b -n 1 | grep axion_poc | awk '{print \$6}'")
+  MEM=$(ssh root@$CAMERA_IP "top -b -n 1 | grep axis_is_poc | awk '{print \$6}'")
 
   # Get uptime
-  UPTIME=$(curl -s -u root:pass http://$CAMERA_IP/local/axion_poc/status | jq -r '.uptime_seconds')
+  UPTIME=$(curl -s -u root:pass http://$CAMERA_IP/local/axis_is_poc/status | jq -r '.uptime_seconds')
 
   # Get FPS
-  FPS=$(curl -s -u root:pass http://$CAMERA_IP/local/axion_poc/status | jq -r '.actual_fps')
+  FPS=$(curl -s -u root:pass http://$CAMERA_IP/local/axis_is_poc/status | jq -r '.actual_fps')
 
   echo "$TIMESTAMP | Uptime: ${UPTIME}s | FPS: $FPS | Mem: $MEM" | tee -a $LOG_FILE
 
@@ -527,7 +527,7 @@ After 24 hours:
 1. Check logs: `ssh root@192.168.1.101 "tail -100 /var/log/messages | grep axion"`
 2. Check manifest.json is valid JSON
 3. Verify dependencies (larod, vdo) available on camera
-4. Try manual start: `ssh root@192.168.1.101 "/usr/local/packages/axion_poc/axion_poc"`
+4. Try manual start: `ssh root@192.168.1.101 "/usr/local/packages/axis_is_poc/axis_is_poc"`
 
 ### Issue: No MQTT Messages
 
@@ -582,10 +582,10 @@ If issues persist:
 1. **Collect Diagnostics:**
    ```bash
    # Save logs
-   ssh root@192.168.1.101 "cat /var/log/messages | grep axion_poc" > camera.log
+   ssh root@192.168.1.101 "cat /var/log/messages | grep axis_is_poc" > camera.log
 
    # Save status
-   curl -s -u root:pass http://192.168.1.101/local/axion_poc/status > status.json
+   curl -s -u root:pass http://192.168.1.101/local/axis_is_poc/status > status.json
 
    # Save MQTT samples
    python mqtt_subscriber.py --broker localhost > mqtt_samples.txt
@@ -594,7 +594,7 @@ If issues persist:
 
 2. **Review Documentation:**
    - AXIS_REPOS_ANALYSIS.md (code patterns)
-   - AXION_PLANNING_SUMMARY.md (architecture)
+   - Axis I.S._PLANNING_SUMMARY.md (architecture)
    - POC_SUCCESS_CRITERIA.md (expected behavior)
 
 3. **Check Common Issues:**

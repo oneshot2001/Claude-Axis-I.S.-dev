@@ -1,4 +1,4 @@
-# AXION Modular Architecture - Implementation Complete
+# Axis I.S. Modular Architecture - Implementation Complete
 
 **Date:** 2025-11-23
 **Version:** 2.0.0
@@ -8,7 +8,7 @@
 
 ## What Was Built
 
-The AXION proof-of-concept has been **completely refactored** from a monolithic application into a **modular plugin-based architecture**. Here's what was created:
+The Axis I.S. proof-of-concept has been **completely refactored** from a monolithic application into a **modular plugin-based architecture**. Here's what was created:
 
 ### Core Files Created/Modified
 
@@ -42,7 +42,7 @@ The AXION proof-of-concept has been **completely refactored** from a monolithic 
 - [`poc/camera/app/Makefile`](poc/camera/app/Makefile) - Conditional compilation support
 
 #### 9. **Documentation** (New)
-- [`AXION_MODULAR_ARCHITECTURE_DESIGN.md`](AXION_MODULAR_ARCHITECTURE_DESIGN.md) - Comprehensive design doc (1,400+ lines)
+- [`Axis I.S._MODULAR_ARCHITECTURE_DESIGN.md`](Axis I.S._MODULAR_ARCHITECTURE_DESIGN.md) - Comprehensive design doc (1,400+ lines)
 
 ---
 
@@ -247,7 +247,7 @@ make clean && make ENABLE_LPR=0 ENABLE_OCR=1  # + OCR
 make clean && make                             # Full
 
 # Verify binary was created
-ls -lh axion_poc
+ls -lh axis_is_poc
 ```
 
 **Expected Result:** All 4 variants compile successfully
@@ -256,10 +256,10 @@ ls -lh axion_poc
 
 ```bash
 # Run application locally (requires AXIS SDK)
-./axion_poc &
+./axis_is_poc &
 
 # Check modules endpoint
-curl http://localhost:8080/local/axion_poc/modules | jq .
+curl http://localhost:8080/local/axis_is_poc/modules | jq .
 
 # Expected output:
 {
@@ -281,8 +281,8 @@ curl http://localhost:8080/local/axion_poc/modules | jq .
 make clean && make ENABLE_LPR=0 ENABLE_OCR=0
 
 # Run and monitor MQTT
-./axion_poc &
-mosquitto_sub -t "axion/camera/+/metadata" -v
+./axis_is_poc &
+mosquitto_sub -t "axis-is/camera/+/metadata" -v
 
 # Expected: Same output as v1.0.0 POC
 # - YOLOv5n detections
@@ -304,10 +304,10 @@ vi app/settings/lpr.json
 make clean && make ENABLE_LPR=1 ENABLE_OCR=0
 
 # Run application
-./axion_poc &
+./axis_is_poc &
 
 # Monitor MQTT for vehicle detections
-mosquitto_sub -t "axion/camera/+/metadata" -C 10 | \
+mosquitto_sub -t "axis-is/camera/+/metadata" -C 10 | \
     jq 'select(.modules.lpr != null)'
 
 # Expected:
@@ -342,10 +342,10 @@ vi app/settings/ocr.json
 make clean && make ENABLE_LPR=0 ENABLE_OCR=1
 
 # Run application
-./axion_poc &
+./axis_is_poc &
 
 # Monitor MQTT for text detections
-mosquitto_sub -t "axion/camera/+/metadata" -C 30 | \
+mosquitto_sub -t "axis-is/camera/+/metadata" -C 30 | \
     jq 'select(.modules.ocr != null)'
 
 # Expected:
@@ -378,10 +378,10 @@ vi app/settings/lpr.json  # Set claude_api_key
 vi app/settings/ocr.json  # Set gemini_api_key
 
 # Run application
-./axion_poc &
+./axis_is_poc &
 
 # Monitor performance
-watch -n 1 'curl -s http://localhost:8080/local/axion_poc/status | \
+watch -n 1 'curl -s http://localhost:8080/local/axis_is_poc/status | \
     jq "{fps: .actual_fps, modules: .module_count, frames: .frames_processed}"'
 
 # Expected:
@@ -409,37 +409,37 @@ make clean && make
 acap-build .
 
 # 3. Upload to camera
-scp axion_poc_2.0.0_aarch64.eap root@192.168.1.100:/tmp/
+scp axis_is_poc_2.0.0_aarch64.eap root@192.168.1.100:/tmp/
 
 # 4. Install via web interface
 # Navigate to: http://192.168.1.100/index.html#system/apps
-# Click "Upload" and select axion_poc_2.0.0_aarch64.eap
+# Click "Upload" and select axis_is_poc_2.0.0_aarch64.eap
 
 # 5. Configure API keys via SSH
 ssh root@192.168.1.100
-vi /usr/local/packages/axion_poc/settings/lpr.json
+vi /usr/local/packages/axis_is_poc/settings/lpr.json
 # Set claude_api_key
 
-vi /usr/local/packages/axion_poc/settings/ocr.json
+vi /usr/local/packages/axis_is_poc/settings/ocr.json
 # Set gemini_api_key
 
 # 6. Start application
 # Via web interface, or:
-/usr/local/packages/axion_poc/axion_poc &
+/usr/local/packages/axis_is_poc/axis_is_poc &
 
 # 7. Monitor logs
-tail -f /var/log/syslog | grep axion_poc
+tail -f /var/log/syslog | grep axis_is_poc
 
 # Expected log output:
-# [axion_poc] Starting AXION POC v2.0.0 (Modular)
-# [axion_poc] Discovered and initialized 3 modules:
-# [axion_poc]   [0] detection v1.0.0 (priority 10)
-# [axion_poc]   [1] lpr v1.0.0 (priority 20)
-# [axion_poc]   [2] ocr v1.0.0 (priority 30)
-# [axion_poc] Starting main loop (target 10 FPS)
+# [axis_is_poc] Starting Axis I.S. POC v2.0.0 (Modular)
+# [axis_is_poc] Discovered and initialized 3 modules:
+# [axis_is_poc]   [0] detection v1.0.0 (priority 10)
+# [axis_is_poc]   [1] lpr v1.0.0 (priority 20)
+# [axis_is_poc]   [2] ocr v1.0.0 (priority 30)
+# [axis_is_poc] Starting main loop (target 10 FPS)
 
 # 8. Verify modules loaded
-curl http://192.168.1.100:8080/local/axion_poc/modules
+curl http://192.168.1.100:8080/local/axis_is_poc/modules
 ```
 
 ---
@@ -571,7 +571,7 @@ Plus 5 configuration files and comprehensive documentation.
 
 For questions or issues, please consult:
 
-1. **Design Document**: [`AXION_MODULAR_ARCHITECTURE_DESIGN.md`](AXION_MODULAR_ARCHITECTURE_DESIGN.md)
+1. **Design Document**: [`Axis I.S._MODULAR_ARCHITECTURE_DESIGN.md`](Axis I.S._MODULAR_ARCHITECTURE_DESIGN.md)
 2. **Module Headers**: [`module.h`](poc/camera/app/module.h), [`core.h`](poc/camera/app/core.h)
 3. **Example Modules**: [`detection_module.c`](poc/camera/app/detection_module.c) (reference implementation)
 4. **Build System**: [`Makefile`](poc/camera/app/Makefile)
@@ -584,4 +584,4 @@ For questions or issues, please consult:
 
 ---
 
-**Congratulations on achieving a fully modular AXION architecture! 🎉**
+**Congratulations on achieving a fully modular Axis I.S. architecture! 🎉**

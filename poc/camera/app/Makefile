@@ -1,4 +1,4 @@
-PROG = axion_poc
+PROG = axis_is_poc
 
 # Module feature flags (can be overridden: make ENABLE_LPR=0 ENABLE_OCR=0)
 ENABLE_LPR ?= 1

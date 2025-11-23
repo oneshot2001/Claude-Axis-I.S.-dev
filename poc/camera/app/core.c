@@ -1,5 +1,5 @@
 /**
- * AXION Core Module Implementation
+ * Axis I.S. Core Module Implementation
  *
  * Manages VDO streams, Larod inference, DLPU coordination, MQTT, and module orchestration.
  */
@@ -82,7 +82,7 @@ int core_init(CoreContext** ctx, const char* config_file) {
     }
 
     // Initialize Larod inference
-    core->larod = Larod_Init("/usr/local/packages/axion_poc/models/yolov5n_int8.tflite", conf_threshold);
+    core->larod = Larod_Init("/usr/local/packages/axis_is_poc/models/yolov5n_int8.tflite", conf_threshold);
     if (!core->larod) {
         LOG(LOG_ERR, "Core: Failed to initialize Larod\n");
         goto error;
@@ -309,7 +309,7 @@ int core_process_frame(CoreContext* ctx) {
 
         if (mod->process) {
             int status = mod->process(mod_ctx, &fdata);
-            if (status == AXION_MODULE_ERROR) {
+            if (status == AXIS_IS_MODULE_ERROR) {
                 LOG(LOG_WARN, "Core: Module '%s' returned error\n", mod->name);
             }
         }

@@ -1,8 +1,8 @@
-# AXION POC - Model Files
+# Axis I.S. POC - Model Files
 
 ## YOLOv5n INT8 Model
 
-The AXION POC requires a YOLOv5n model quantized to INT8 for optimal performance on ARTPEC-9 DLPU.
+The Axis I.S. POC requires a YOLOv5n model quantized to INT8 for optimal performance on ARTPEC-9 DLPU.
 
 ### Download Model
 
@@ -17,7 +17,7 @@ You can obtain the model from one of these sources:
 wget https://github.com/AxisCommunications/axis-model-zoo/releases/download/v1.0/yolov5n_416_416_int8.tflite
 
 # Place in this directory
-cp yolov5n_416_416_int8.tflite /usr/local/packages/axion_poc/models/
+cp yolov5n_416_416_int8.tflite /usr/local/packages/axis_is_poc/models/
 ```
 
 #### Option 2: Convert from PyTorch

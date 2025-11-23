@@ -1,12 +1,12 @@
 #!/bin/bash
 #
-# AXION POC Native Build Script
+# Axis I.S. POC Native Build Script
 # Builds the ACAP as a native binary for AXIS OS 12 compatibility
 #
 
 set -e
 
-echo "====== Building AXION POC ACAP (Native Binary) ======"
+echo "====== Building Axis I.S. POC ACAP (Native Binary) ======"
 
 # Check if Docker is running (needed for SDK access)
 if ! docker info > /dev/null 2>&1; then
@@ -33,7 +33,7 @@ echo "Cleaning previous build artifacts..."
 rm -f "$SCRIPT_DIR"/*.eap
 rm -f "$SCRIPT_DIR"/app/*.eap
 rm -f "$SCRIPT_DIR"/app/*.o
-rm -f "$SCRIPT_DIR"/app/axion_poc
+rm -f "$SCRIPT_DIR"/app/axis_is_poc
 
 # Build using ACAP Native SDK container (for compilation only)
 echo ""

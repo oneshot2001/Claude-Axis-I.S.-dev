@@ -1,4 +1,4 @@
-# AXION POC - Implementation Complete
+# Axis I.S. POC - Implementation Complete
 
 **Status:** ✅ Ready for Testing
 **Date:** November 23, 2025
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The AXION Proof of Concept has been **fully implemented** and is ready for deployment and testing on Axis cameras. All code files, build scripts, documentation, and cloud infrastructure have been created.
+The Axis I.S. Proof of Concept has been **fully implemented** and is ready for deployment and testing on Axis cameras. All code files, build scripts, documentation, and cloud infrastructure have been created.
 
 ### What Has Been Built
 
@@ -102,7 +102,7 @@ cd poc/camera
 ./build.sh
 ```
 
-Expected output: `axion_poc_1.0.0_aarch64.eap` file created
+Expected output: `axis_is_poc_1.0.0_aarch64.eap` file created
 
 ### 2. Deploy
 
@@ -194,8 +194,8 @@ Expected: MQTT messages streaming from camera
 ### After Deployment
 
 Monitor these endpoints:
-- `http://<camera-ip>/local/axion_poc/status` - Application health
-- `http://<camera-ip>/local/axion_poc/metadata` - Latest frame data
+- `http://<camera-ip>/local/axis_is_poc/status` - Application health
+- `http://<camera-ip>/local/axis_is_poc/metadata` - Latest frame data
 - Camera logs: `ssh root@<camera-ip> "tail -f /var/log/messages | grep axion"`
 
 ---
@@ -321,7 +321,7 @@ If POC is successful:
 1. Production hardening
 2. Security implementation
 3. Multi-site deployment
-4. Full AXION platform launch
+4. Full Axis I.S. platform launch
 
 ---
 
@@ -392,10 +392,10 @@ See `POC_TESTING_GUIDE.md` for detailed troubleshooting.
 ## Support Resources
 
 ### Internal Documents
-- `AXION_PLANNING_SUMMARY.md` - Architecture and requirements
-- `AXION_API_SPECIFICATIONS.md` - Message formats
+- `Axis I.S._PLANNING_SUMMARY.md` - Architecture and requirements
+- `Axis I.S._API_SPECIFICATIONS.md` - Message formats
 - `AXIS_REPOS_ANALYSIS.md` - Code patterns and examples
-- `AXION_DATABASE_SCHEMAS.md` - Future database design
+- `Axis I.S._DATABASE_SCHEMAS.md` - Future database design
 
 ### External Resources
 - Axis Developer Portal: https://www.axis.com/developer-community
@@ -421,7 +421,7 @@ See `POC_TESTING_GUIDE.md` for detailed troubleshooting.
 
 ## Acknowledgments
 
-**Created by:** AXION Development Team
+**Created by:** Axis I.S. Development Team
 **Date:** November 23, 2025
 **POC Version:** 1.0.0
 
@@ -440,7 +440,7 @@ See `POC_TESTING_GUIDE.md` for detailed troubleshooting.
 
 ## Status: READY FOR TESTING ✅
 
-The AXION POC is **complete** and **ready for deployment** to Axis cameras.
+The Axis I.S. POC is **complete** and **ready for deployment** to Axis cameras.
 
 **Next Action:** Follow POC_TESTING_GUIDE.md to validate the implementation.
 

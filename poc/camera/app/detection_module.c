@@ -1,5 +1,5 @@
 /**
- * AXION Detection Module
+ * Axis I.S. Detection Module
  *
  * YOLOv5n object detection + scene/motion analysis
  * Priority: 10 (runs first)
@@ -106,7 +106,7 @@ static int detection_init(ModuleContext* ctx, cJSON* config) {
     // Load configuration
     state->confidence_threshold = module_config_get_float(config, "confidence_threshold", 0.25);
     state->model_path = module_config_get_string(config, "model_path",
-                                                   "/usr/local/packages/axion_poc/models/yolov5n_int8.tflite");
+                                                   "/usr/local/packages/axis_is_poc/models/yolov5n_int8.tflite");
 
     // Initialize Larod
     state->larod = Larod_Init(state->model_path, state->confidence_threshold);
@@ -121,7 +121,7 @@ static int detection_init(ModuleContext* ctx, cJSON* config) {
     syslog(LOG_INFO, "[%s] Initialized with model=%s threshold=%.2f\n",
            MODULE_NAME, state->model_path, state->confidence_threshold);
 
-    return AXION_MODULE_SUCCESS;
+    return AXIS_IS_MODULE_SUCCESS;
 }
 
 /**
@@ -130,14 +130,14 @@ static int detection_init(ModuleContext* ctx, cJSON* config) {
 static int detection_process(ModuleContext* ctx, FrameData* frame) {
     DetectionState* state = (DetectionState*)ctx->module_state;
     if (!state || !state->larod) {
-        return AXION_MODULE_NOT_READY;
+        return AXIS_IS_MODULE_NOT_READY;
     }
 
     // Run YOLOv5n inference
     LarodResult* result = Larod_Run_Inference(state->larod, frame->vdo_buffer);
     if (!result) {
         syslog(LOG_WARN, "[%s] Inference failed\n", MODULE_NAME);
-        return AXION_MODULE_ERROR;
+        return AXIS_IS_MODULE_ERROR;
     }
 
     // Add detections to metadata
@@ -176,7 +176,7 @@ static int detection_process(ModuleContext* ctx, FrameData* frame) {
     // Cleanup
     Larod_Free_Result(result);
 
-    return AXION_MODULE_SUCCESS;
+    return AXIS_IS_MODULE_SUCCESS;
 }
 
 /**

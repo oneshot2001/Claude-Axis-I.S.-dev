@@ -1,7 +1,7 @@
 /**
  * metadata.h
  *
- * Metadata extraction for AXION POC
+ * Metadata extraction for Axis I.S. POC
  * Processes frames to extract scene hashes, motion scores, and object information
  */
 

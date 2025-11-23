@@ -1,4 +1,4 @@
-# AXION Platform - Planning Phase Complete
+# Axis I.S. Platform - Planning Phase Complete
 **Date:** November 23, 2025  
 **Status:** ✅ All Planning Documents Complete
 
@@ -6,16 +6,16 @@
 
 ## Executive Summary
 
-All detailed planning for the AXION platform has been completed by specialized sub-agents. We now have comprehensive specifications ready for implementation.
+All detailed planning for the Axis I.S. platform has been completed by specialized sub-agents. We now have comprehensive specifications ready for implementation.
 
 ### Planning Documents Created
 
 | Document | Status | Lines | Description |
 |----------|--------|-------|-------------|
-| **AXION_ARCHITECTURE_DIAGRAMS.md** | ✅ Complete | 800+ | System overview, component diagrams, state machines |
-| **AXION_DATABASE_SCHEMAS.md** | ✅ Complete | 1,200+ | PostgreSQL + Redis schemas, migrations, queries |
-| **AXION_API_SPECIFICATIONS.md** | ✅ Complete | 2,800+ | REST APIs, MQTT schemas, OpenAPI specs |
-| **AXION_TEST_PLAN.md** | ✅ Complete | 2,000+ | 157 test cases, 6-week schedule, automation |
+| **Axis I.S._ARCHITECTURE_DIAGRAMS.md** | ✅ Complete | 800+ | System overview, component diagrams, state machines |
+| **Axis I.S._DATABASE_SCHEMAS.md** | ✅ Complete | 1,200+ | PostgreSQL + Redis schemas, migrations, queries |
+| **Axis I.S._API_SPECIFICATIONS.md** | ✅ Complete | 2,800+ | REST APIs, MQTT schemas, OpenAPI specs |
+| **Axis I.S._TEST_PLAN.md** | ✅ Complete | 2,000+ | 157 test cases, 6-week schedule, automation |
 | **REPOSITORY_ANALYSIS.md** | ✅ Complete | 800+ | make_acap template analysis |
 | **AXIS_REPOS_ANALYSIS.md** | ✅ Complete | 1,500+ | Axis official repos review |
 
@@ -161,19 +161,19 @@ POST /control            - Control commands
 
 **Camera → Cloud:**
 ```
-axion/camera/{id}/metadata   - 10 FPS stream (QoS 0)
-axion/camera/{id}/event      - Significant events (QoS 1)
-axion/camera/{id}/alert      - Critical alerts (QoS 2)
-axion/camera/{id}/status     - 60s health updates (QoS 1)
-axion/camera/{id}/heartbeat  - 30s keepalive (QoS 0)
+axis-is/camera/{id}/metadata   - 10 FPS stream (QoS 0)
+axis-is/camera/{id}/event      - Significant events (QoS 1)
+axis-is/camera/{id}/alert      - Critical alerts (QoS 2)
+axis-is/camera/{id}/status     - 60s health updates (QoS 1)
+axis-is/camera/{id}/heartbeat  - 30s keepalive (QoS 0)
 ```
 
 **Cloud → Camera:**
 ```
-axion/camera/{id}/config         - Config updates (QoS 1)
-axion/camera/{id}/dlpu_schedule  - Time slot assignment (QoS 1)
-axion/camera/{id}/frame_request  - Frame request (QoS 1)
-axion/camera/{id}/command        - Control (QoS 1)
+axis-is/camera/{id}/config         - Config updates (QoS 1)
+axis-is/camera/{id}/dlpu_schedule  - Time slot assignment (QoS 1)
+axis-is/camera/{id}/frame_request  - Frame request (QoS 1)
+axis-is/camera/{id}/command        - Control (QoS 1)
 ```
 
 ### Cloud Services REST API (20+ Endpoints)
@@ -399,7 +399,7 @@ Build minimal viable camera app to validate:
 
 **Week 1:**
 - Day 1-2: Set up dev environment, clone repos
-- Day 3-4: Create AXION ACAP based on CV SDK example
+- Day 3-4: Create Axis I.S. ACAP based on CV SDK example
 - Day 5: Build and deploy to first camera
 
 **Week 2:**
@@ -414,7 +414,7 @@ Build minimal viable camera app to validate:
 
 ### POC Deliverables
 
-1. Working AXION ACAP (.eap file)
+1. Working Axis I.S. ACAP (.eap file)
 2. Deployment instructions
 3. Performance measurements
 4. Memory profiling results
@@ -442,19 +442,19 @@ All planning documents are ready. We have:
 
 ### Planning Documents (Current Directory)
 ```
-AXION_ARCHITECTURE_DIAGRAMS.md      - System architecture
-AXION_DATABASE_SCHEMAS.md           - PostgreSQL + Redis
-AXION_API_SPECIFICATIONS.md         - REST + MQTT APIs
-AXION_TEST_PLAN.md                  - 157 test cases
+Axis I.S._ARCHITECTURE_DIAGRAMS.md      - System architecture
+Axis I.S._DATABASE_SCHEMAS.md           - PostgreSQL + Redis
+Axis I.S._API_SPECIFICATIONS.md         - REST + MQTT APIs
+Axis I.S._TEST_PLAN.md                  - 157 test cases
 REPOSITORY_ANALYSIS.md              - make_acap analysis
 AXIS_REPOS_ANALYSIS.md              - Axis repos review
-AXION_PLANNING_SUMMARY.md           - This document
+Axis I.S._PLANNING_SUMMARY.md           - This document
 ```
 
 ### Reference Documents (Provided)
 ```
-AXION_CRITICAL_IMPLEMENTATION_GUIDE.md  - Critical gotchas
-AXION_Integration_Guide.md              - DLPU + Bandwidth guide
+Axis I.S._CRITICAL_IMPLEMENTATION_GUIDE.md  - Critical gotchas
+Axis I.S._Integration_Guide.md              - DLPU + Bandwidth guide
 axion_claude_integration.py             - Python reference
 axion_complete_deployment.sh            - Deployment script
 ```

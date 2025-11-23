@@ -1,4 +1,4 @@
-# AXION POC - Proof of Concept
+# Axis I.S. POC - Proof of Concept
 
 **Version:** 1.0.0
 **Status:** Ready for Testing
@@ -9,7 +9,7 @@
 
 ## Overview
 
-This is a working Proof of Concept for the AXION edge-cloud AI surveillance platform. It validates the core technical assumptions:
+This is a working Proof of Concept for the Axis I.S. edge-cloud AI surveillance platform. It validates the core technical assumptions:
 
 1. **VDO Streaming** - Capture frames at 416x416 @ 10 FPS
 2. **ML Inference** - Run YOLOv5n INT8 on DLPU hardware
@@ -38,7 +38,7 @@ cd poc/camera
 ./build.sh
 ```
 
-This creates `axion_poc_1_0_0_aarch64.eap` (~5-10MB native binary)
+This creates `axis_is_poc_1_0_0_aarch64.eap` (~5-10MB native binary)
 
 **Note:** The build process uses ACAP Native SDK to compile a native binary, not a Docker container. This ensures compatibility with AXIS OS 12. See `camera/BUILDING_NATIVE.md` for detailed build documentation.
 
@@ -98,14 +98,14 @@ Monitor the cloud subscriber output:
 
 Check HTTP endpoints:
 ```bash
-curl http://192.168.1.101/local/axion_poc/status | jq
-curl http://192.168.1.101/local/axion_poc/metadata | jq
+curl http://192.168.1.101/local/axis_is_poc/status | jq
+curl http://192.168.1.101/local/axis_is_poc/metadata | jq
 ```
 
 View camera logs:
 ```bash
 ssh root@192.168.1.101
-tail -f /var/log/messages | grep axion_poc
+tail -f /var/log/messages | grep axis_is_poc
 ```
 
 ## Project Structure
@@ -209,7 +209,7 @@ Record actual measurements in `POC_RESULTS_TEMPLATE.md`.
 - Reduce image resolution if needed
 
 ### Inference errors
-- Verify model file exists: `/usr/local/packages/axion_poc/models/yolov5n_int8.tflite`
+- Verify model file exists: `/usr/local/packages/axis_is_poc/models/yolov5n_int8.tflite`
 - Check model permissions
 - Review larod logs
 - Ensure DLPU is available on your camera model
@@ -267,7 +267,7 @@ For issues or questions:
 3. Check `NATIVE_BUILD_MIGRATION.md` for migration details
 4. Review camera syslog output
 5. Enable debug in cloud subscriber: `--debug`
-6. Check AXION_REPOS_ANALYSIS.md for code patterns
+6. Check Axis I.S._REPOS_ANALYSIS.md for code patterns
 
 ## License
 
@@ -277,4 +277,4 @@ See LICENSE file in repository root.
 
 **POC Created:** November 23, 2025
 **Last Updated:** November 23, 2025
-**Maintainer:** AXION Development Team
+**Maintainer:** Axis I.S. Development Team

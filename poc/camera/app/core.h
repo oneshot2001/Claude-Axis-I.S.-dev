@@ -1,5 +1,5 @@
 /**
- * AXION Core Module
+ * Axis I.S. Core Module
  *
  * Manages VDO streams, Larod inference, DLPU coordination, and module orchestration.
  */

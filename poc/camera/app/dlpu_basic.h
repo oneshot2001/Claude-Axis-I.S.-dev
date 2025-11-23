@@ -1,7 +1,7 @@
 /**
  * dlpu_basic.h
  *
- * Simple DLPU coordinator for AXION POC
+ * Simple DLPU coordinator for Axis I.S. POC
  * Uses time-division multiplexing to prevent concurrent DLPU access
  */
 

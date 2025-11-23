@@ -1,7 +1,7 @@
 /**
  * larod_handler.h
  *
- * Larod (ML inference) handler for AXION POC
+ * Larod (ML inference) handler for Axis I.S. POC
  * Executes YOLOv5n INT8 model on DLPU hardware
  */
 

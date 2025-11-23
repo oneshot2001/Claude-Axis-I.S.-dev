@@ -1,4 +1,4 @@
-# AXION Modular Architecture Design
+# Axis I.S. Modular Architecture Design
 
 **Version:** 2.0.0
 **Date:** 2025-11-23
@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-The AXION platform has been transformed from a monolithic proof-of-concept into a **modular plugin-based architecture** supporting extensible AI capabilities. The system now consists of:
+The Axis I.S. platform has been transformed from a monolithic proof-of-concept into a **modular plugin-based architecture** supporting extensible AI capabilities. The system now consists of:
 
 - **Core Module**: VDO streaming, Larod inference coordination, DLPU management, MQTT publishing
 - **Detection Module**: YOLOv5n object detection (always enabled)
@@ -190,7 +190,7 @@ struct MetadataFrame {
 ```c
 /**
  * Register module using linker magic
- * Placed in .axion_modules section, discovered at runtime
+ * Placed in .axis_is_modules section, discovered at runtime
  */
 #define MODULE_REGISTER(var_name, mod_name, mod_version, mod_priority, \
                         init_fn, process_fn, cleanup_fn) \
@@ -205,7 +205,7 @@ struct MetadataFrame {
         .on_stop = NULL \
     }; \
     static ModuleInterface* __module_ptr_##var_name \
-        __attribute__((used, section(".axion_modules"))) = &var_name
+        __attribute__((used, section(".axis_is_modules"))) = &var_name
 ```
 
 **Usage Example:**
@@ -257,7 +257,7 @@ typedef struct {
 
 ```c
 int core_discover_modules(CoreContext* ctx) {
-    // Linker provides these symbols for .axion_modules section
+    // Linker provides these symbols for .axis_is_modules section
     extern ModuleInterface* __start_axion_modules;
     extern ModuleInterface* __stop_axion_modules;
 
@@ -309,7 +309,7 @@ int core_discover_modules(CoreContext* ctx) {
 {
   "enabled": true,
   "confidence_threshold": 0.25,
-  "model_path": "/usr/local/packages/axion_poc/models/yolov5n_int8.tflite"
+  "model_path": "/usr/local/packages/axis_is_poc/models/yolov5n_int8.tflite"
 }
 ```
 
@@ -355,7 +355,7 @@ static int detection_process(ModuleContext* ctx, FrameData* frame) {
     cJSON_AddItemToObject(frame->metadata->custom_data, "detection", detection_data);
 
     Larod_Free_Result(result);
-    return AXION_MODULE_SUCCESS;
+    return Axis I.S._MODULE_SUCCESS;
 }
 ```
 
@@ -493,7 +493,7 @@ static int lpr_process(ModuleContext* ctx, FrameData* frame) {
     // Throttling: Process every Nth frame
     state->frame_counter++;
     if (state->frame_counter % state->process_interval != 0) {
-        return AXION_MODULE_SKIP;
+        return Axis I.S._MODULE_SKIP;
     }
 
     // Check for vehicle detections
@@ -540,7 +540,7 @@ static int lpr_process(ModuleContext* ctx, FrameData* frame) {
         cJSON_Delete(plates_array);
     }
 
-    return AXION_MODULE_SUCCESS;
+    return Axis I.S._MODULE_SUCCESS;
 }
 ```
 
@@ -677,14 +677,14 @@ static int ocr_process(ModuleContext* ctx, FrameData* frame) {
     // Throttling
     state->frame_counter++;
     if (state->frame_counter % state->process_interval != 0) {
-        return AXION_MODULE_SKIP;
+        return Axis I.S._MODULE_SKIP;
     }
 
     // Check if frame likely contains text (edge density heuristic)
     float edge_density = estimate_edge_density(frame->frame_data,
                                                  frame->width, frame->height);
     if (edge_density < state->min_edge_density) {
-        return AXION_MODULE_SKIP;
+        return Axis I.S._MODULE_SKIP;
     }
 
     // Encode frame as JPEG + base64 (implementation: TODO)
@@ -707,7 +707,7 @@ static int ocr_process(ModuleContext* ctx, FrameData* frame) {
 
     cJSON_AddItemToObject(frame->metadata->custom_data, "ocr", ocr_data);
 
-    return AXION_MODULE_SUCCESS;
+    return Axis I.S._MODULE_SUCCESS;
 }
 ```
 
@@ -744,7 +744,7 @@ static int ocr_process(ModuleContext* ctx, FrameData* frame) {
 ### Makefile Structure
 
 ```makefile
-PROG = axion_poc
+PROG = axis_is_poc
 
 # Module feature flags (user-configurable)
 ENABLE_LPR ?= 1
@@ -898,10 +898,10 @@ cd poc/camera
 make ENABLE_LPR=0 ENABLE_OCR=0
 
 # 2. Test on camera (should produce identical output to v1.0.0)
-./axion_poc
+./axis_is_poc
 
 # 3. Compare MQTT output
-mosquitto_sub -t "axion/camera/+/metadata" -v
+mosquitto_sub -t "axis-is/camera/+/metadata" -v
 
 # Expected: Same detection results, new "modules" field in JSON
 
@@ -914,7 +914,7 @@ vi app/settings/lpr.json
 # Set: "claude_api_key": "sk-ant-..."
 
 # 6. Test LPR functionality
-./axion_poc
+./axis_is_poc
 # Drive a vehicle past camera, check MQTT for plate data
 
 # 7. Build full variant
@@ -926,7 +926,7 @@ vi app/settings/ocr.json
 # Set: "gemini_api_key": "AIza..."
 
 # 9. Test OCR functionality
-./axion_poc
+./axis_is_poc
 # Show text to camera, check MQTT for OCR data
 ```
 
@@ -942,7 +942,7 @@ vi app/settings/ocr.json
 **Test Command:**
 ```bash
 # Monitor FPS and memory
-watch -n 1 'curl -s http://localhost:8080/local/axion_poc/status | jq .'
+watch -n 1 'curl -s http://localhost:8080/local/axis_is_poc/status | jq .'
 ```
 
 ---
@@ -1005,7 +1005,7 @@ static int face_process(ModuleContext* ctx, FrameData* frame) {
     // 3. Run face embedding model
     // 4. Match against database
     // 5. Add face_id to metadata
-    return AXION_MODULE_SUCCESS;
+    return Axis I.S._MODULE_SUCCESS;
 }
 ```
 
@@ -1023,7 +1023,7 @@ static int tracking_process(ModuleContext* ctx, FrameData* frame) {
     // 3. Assign persistent track IDs
     // 4. Add track_id to each detection
     // 5. Publish track enter/exit events
-    return AXION_MODULE_SUCCESS;
+    return Axis I.S._MODULE_SUCCESS;
 }
 ```
 
@@ -1040,7 +1040,7 @@ static int anomaly_process(ModuleContext* ctx, FrameData* frame) {
     // 2. Compare against learned baseline
     // 3. Detect deviations (unusual activity, missing objects)
     // 4. Publish anomaly alerts
-    return AXION_MODULE_SUCCESS;
+    return Axis I.S._MODULE_SUCCESS;
 }
 ```
 
@@ -1126,29 +1126,29 @@ make ENABLE_LPR=1 ENABLE_OCR=1
 acap-build .
 
 # 3. Upload to camera
-scp axion_poc_2.0.0_aarch64.eap root@<camera-ip>:/tmp/
+scp axis_is_poc_2.0.0_aarch64.eap root@<camera-ip>:/tmp/
 
 # 4. Install via web interface
 # http://<camera-ip>/index.html#system/apps
-# Upload axion_poc_2.0.0_aarch64.eap
+# Upload axis_is_poc_2.0.0_aarch64.eap
 
 # 5. Configure API keys
 ssh root@<camera-ip>
-vi /usr/local/packages/axion_poc/settings/lpr.json
+vi /usr/local/packages/axis_is_poc/settings/lpr.json
 # Set claude_api_key
 
-vi /usr/local/packages/axion_poc/settings/ocr.json
+vi /usr/local/packages/axis_is_poc/settings/ocr.json
 # Set gemini_api_key
 
 # 6. Start application
 # Via web interface or:
-/usr/local/packages/axion_poc/axion_poc &
+/usr/local/packages/axis_is_poc/axis_is_poc &
 
 # 7. Monitor logs
-tail -f /var/log/syslog | grep axion_poc
+tail -f /var/log/syslog | grep axis_is_poc
 
 # 8. Verify modules loaded
-curl http://<camera-ip>:8080/local/axion_poc/modules
+curl http://<camera-ip>:8080/local/axis_is_poc/modules
 ```
 
 ### Docker Deployment (Development Only)
@@ -1174,7 +1174,7 @@ void test_module_init() {
     ModuleContext ctx = {0};
     cJSON* config = cJSON_Parse("{\"enabled\": true}");
 
-    assert(lpr_init(&ctx, config) == AXION_MODULE_SUCCESS);
+    assert(lpr_init(&ctx, config) == Axis I.S._MODULE_SUCCESS);
     assert(ctx.module_state != NULL);
 
     lpr_cleanup(&ctx);
@@ -1203,13 +1203,13 @@ make clean && make ENABLE_LPR=0 ENABLE_OCR=1
 make clean && make
 
 # Test module loading
-./axion_poc &
+./axis_is_poc &
 sleep 5
-curl http://localhost:8080/local/axion_poc/modules | jq .
-pkill axion_poc
+curl http://localhost:8080/local/axis_is_poc/modules | jq .
+pkill axis_is_poc
 
 # Test MQTT output
-mosquitto_sub -t "axion/camera/+/metadata" -C 10 > output.json
+mosquitto_sub -t "axis-is/camera/+/metadata" -C 10 > output.json
 jq '.modules | keys' output.json
 # Expected: ["detection"] or ["detection", "lpr", "ocr"]
 ```
@@ -1219,7 +1219,7 @@ jq '.modules | keys' output.json
 ```bash
 # Measure FPS over 24 hours
 while true; do
-    curl -s http://<camera-ip>:8080/local/axion_poc/status | \
+    curl -s http://<camera-ip>:8080/local/axis_is_poc/status | \
     jq -r '[now, .actual_fps, .module_count] | @csv' >> fps_log.csv
     sleep 60
 done
@@ -1246,12 +1246,12 @@ EOF
 **Diagnosis:**
 ```bash
 # Check if module was compiled
-nm axion_poc | grep -i module_name
+nm axis_is_poc | grep -i module_name
 # Should show MODULE_REGISTER symbol
 
 # Check linker sections
-objdump -h axion_poc | grep axion_modules
-# Should show .axion_modules section
+objdump -h axis_is_poc | grep axion_modules
+# Should show .axis_is_modules section
 ```
 
 **Fix:**
@@ -1270,24 +1270,24 @@ endif
 **Diagnosis:**
 ```bash
 # Check config file exists
-ls -l /usr/local/packages/axion_poc/settings/lpr.json
+ls -l /usr/local/packages/axis_is_poc/settings/lpr.json
 
 # Check JSON syntax
-jq . /usr/local/packages/axion_poc/settings/lpr.json
+jq . /usr/local/packages/axis_is_poc/settings/lpr.json
 
 # Check key is not empty
-jq -r '.claude_api_key' /usr/local/packages/axion_poc/settings/lpr.json
+jq -r '.claude_api_key' /usr/local/packages/axis_is_poc/settings/lpr.json
 ```
 
 **Fix:**
 ```bash
 # Update config
-vi /usr/local/packages/axion_poc/settings/lpr.json
+vi /usr/local/packages/axis_is_poc/settings/lpr.json
 # Set: "claude_api_key": "sk-ant-..."
 
 # Restart application
-pkill axion_poc
-/usr/local/packages/axion_poc/axion_poc &
+pkill axis_is_poc
+/usr/local/packages/axis_is_poc/axis_is_poc &
 ```
 
 ### Low FPS
@@ -1297,7 +1297,7 @@ pkill axion_poc
 **Diagnosis:**
 ```bash
 # Check DLPU wait times
-curl http://<camera-ip>:8080/local/axion_poc/status | jq .dlpu_wait_ms
+curl http://<camera-ip>:8080/local/axis_is_poc/status | jq .dlpu_wait_ms
 # Should be < 50ms
 
 # Check API latency
@@ -1305,7 +1305,7 @@ tail -f /var/log/syslog | grep "Claude\|Gemini"
 # Look for timeout errors
 
 # Check memory usage
-curl http://<camera-ip>:8080/local/axion_poc/status | jq .memory_mb
+curl http://<camera-ip>:8080/local/axis_is_poc/status | jq .memory_mb
 # Should be < 1000MB
 ```
 
@@ -1327,7 +1327,7 @@ curl http://<camera-ip>:8080/local/axion_poc/status | jq .memory_mb
 
 ## Summary
 
-The AXION modular architecture provides:
+The Axis I.S. modular architecture provides:
 
 ✅ **Extensibility**: Add modules without core changes
 ✅ **Flexibility**: Build only what you need
@@ -1343,10 +1343,10 @@ The AXION modular architecture provides:
 4. Implement object tracking module
 5. Create module marketplace
 
-**Questions?** Contact the AXION development team.
+**Questions?** Contact the Axis I.S. development team.
 
 ---
 
 **Document Version:** 1.0
 **Last Updated:** 2025-11-23
-**Maintained By:** AXION Team
+**Maintained By:** Axis I.S. Team

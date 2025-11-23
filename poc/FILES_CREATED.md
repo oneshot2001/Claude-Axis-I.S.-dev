@@ -1,4 +1,4 @@
-# AXION POC - Complete File Listing
+# Axis I.S. POC - Complete File Listing
 
 **Total Files:** 42
 **Total Lines of Code:** ~3500+
@@ -184,7 +184,7 @@ build.sh
 
 ### Runtime Dependencies
 ```
-axion_poc (binary)
+axis_is_poc (binary)
 ├── settings/settings.json
 ├── settings/mqtt.json
 ├── models/yolov5n_int8.tflite
@@ -225,7 +225,7 @@ axion_poc (binary)
 - **Configuration Files**: 2
 
 ### Testing Surface
-- **Build Targets**: 1 (axion_poc)
+- **Build Targets**: 1 (axis_is_poc)
 - **Deployment Targets**: Axis ARTPEC-9 cameras
 - **Test Scenarios**: 10+ (see POC_TESTING_GUIDE.md)
 - **Success Criteria**: 40+ checkpoints
@@ -352,8 +352,8 @@ axion_poc (binary)
 For questions about specific files:
 - **Camera code**: See AXIS_REPOS_ANALYSIS.md
 - **Build issues**: See POC_TESTING_GUIDE.md
-- **API specs**: See AXION_API_SPECIFICATIONS.md
-- **Architecture**: See AXION_PLANNING_SUMMARY.md
+- **API specs**: See Axis I.S._API_SPECIFICATIONS.md
+- **Architecture**: See Axis I.S._PLANNING_SUMMARY.md
 
 ---
 

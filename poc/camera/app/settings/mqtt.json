@@ -5,5 +5,5 @@
   "username": "",
   "password": "",
   "ssl": false,
-  "topic_prefix": "axion/camera"
+  "topic_prefix": "axis-is/camera"
 }

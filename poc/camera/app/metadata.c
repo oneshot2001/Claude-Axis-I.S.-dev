@@ -1,7 +1,7 @@
 /**
  * metadata.c
  *
- * Metadata extraction implementation for AXION POC
+ * Metadata extraction implementation for Axis I.S. POC
  */
 
 #include <stdio.h>

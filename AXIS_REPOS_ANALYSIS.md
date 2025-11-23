@@ -6,11 +6,11 @@
 
 ## Executive Summary
 
-After reviewing Axis Communications' official repositories, here's what's available for building AXION:
+After reviewing Axis Communications' official repositories, here's what's available for building Axis I.S.:
 
 ### 🎯 Key Findings
 
-| Repository | Relevance to AXION | Key Takeaways |
+| Repository | Relevance to Axis I.S. | Key Takeaways |
 |------------|-------------------|---------------|
 | **acap-computer-vision-sdk-examples** | ⭐⭐⭐⭐⭐ Critical | VDO integration, OpenCV patterns, ML inference |
 | **axis-model-zoo** | ⭐⭐⭐⭐⭐ Critical | Pre-trained models, YOLOv5 variants, performance data |
@@ -26,7 +26,7 @@ After reviewing Axis Communications' official repositories, here's what's availa
 ### Overview
 Provides patterns for building intelligent video analytics with ML inference on Axis cameras.
 
-### Critical Patterns for AXION
+### Critical Patterns for Axis I.S.
 
 #### VDO (Video Data Object) Integration
 ```c
@@ -92,7 +92,7 @@ apply_nms(detections, iou_threshold=0.4);
 | YOLOv5n Inference | ~80ms | ~50ms | On DLPU |
 | NMS Post-process | ~2ms | ~1ms | CPU-bound |
 
-**AXION Implications:**
+**Axis I.S. Implications:**
 - 5-10 FPS target is very achievable
 - DLPU scheduling is the bottleneck (one inference at a time)
 - Metadata extraction should be <100ms total per frame
@@ -127,7 +127,7 @@ RUN . /opt/axis/acapsdk/environment-setup* && \
 
 Based on typical Axis model zoo contents:
 
-#### YOLOv5 Variants (Most Relevant for AXION)
+#### YOLOv5 Variants (Most Relevant for Axis I.S.)
 
 | Model | Size | FPS (ARTPEC-8) | FPS (ARTPEC-9) | mAP | Memory |
 |-------|------|----------------|----------------|-----|--------|
@@ -135,7 +135,7 @@ Based on typical Axis model zoo contents:
 | YOLOv5s | 14.4 MB | 8-10 | 12-15 | 56.8 | 180 MB |
 | YOLOv5m | 42 MB | 4-6 | 7-9 | 64.1 | 280 MB |
 
-**Recommended for AXION: YOLOv5n**
+**Recommended for Axis I.S.: YOLOv5n**
 - ✅ Meets 5-10 FPS requirement easily
 - ✅ Small size (3.9 MB) - fast loading
 - ✅ Low memory footprint
@@ -175,7 +175,7 @@ model/
 larodConnection* conn = larodConnect(NULL, &error);
 larodModel* model = larodLoadModel(
     conn,
-    "/usr/local/packages/axion/models/yolov5n_int8.tflite",
+    "/usr/local/packages/axis-is/models/yolov5n_int8.tflite",
     LAROD_ACCESS_PRIVATE,
     "tflite",  // Model type
     LAROD_CHIP_DLPU,  // Use DLPU (Deep Learning Processing Unit)
@@ -202,7 +202,7 @@ larodRunInference(conn, model, input_tensor, output_tensor, &error);
 - Inference: ~30-50ms per frame
 - Tensor allocation: ~5ms per frame
 
-**AXION DLPU Scheduler Implications:**
+**Axis I.S. DLPU Scheduler Implications:**
 - With 5 cameras @ 5 FPS = 25 inferences/second
 - Each takes ~50ms = 1.25 seconds total compute time
 - Scheduler must distribute: 1.25s work across 1s of real time
@@ -285,7 +285,7 @@ typedef enum {
 // Good pattern regardless of ACAP version
 ```
 
-### Migration Checklist for AXION
+### Migration Checklist for Axis I.S.
 
 - [x] Use ACAP4 SDK (already using 12.2.0)
 - [x] Use JSON event subscriptions (not XML)
@@ -306,7 +306,7 @@ typedef enum {
 #### Authentication Pattern
 ```bash
 # Service account credentials stored on camera
-/usr/local/packages/axion/config/gcp-credentials.json
+/usr/local/packages/axis-is/config/gcp-credentials.json
 
 # Application uses credential file
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
@@ -327,7 +327,7 @@ HTTP POST to GCS API
 Log Success/Failure
 ```
 
-**Relevant for AXION MQTT Publishing:**
+**Relevant for Axis I.S. MQTT Publishing:**
 1. **Retry logic pattern**: Exponential backoff on network failure
 2. **Credential management**: Secure storage in package directory
 3. **Batch uploads**: Group multiple images to reduce API calls
@@ -349,7 +349,7 @@ async function uploadWithRetry(data, maxRetries = 3) {
 }
 ```
 
-**AXION Application:**
+**Axis I.S. Application:**
 - Apply same retry logic to MQTT publishing
 - Store failed messages to local queue
 - Retry with exponential backoff
@@ -369,7 +369,7 @@ async function uploadWithRetry(data, maxRetries = 3) {
 }
 ```
 
-**AXION Equivalent:**
+**Axis I.S. Equivalent:**
 ```json
 {
   "mqtt": {
@@ -404,9 +404,9 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 - Reproducible builds (pinned versions)
 - Security (minimal attack surface)
 
-**AXION Application:**
+**Axis I.S. Application:**
 ```dockerfile
-# Stage 1: Build AXION ACAP
+# Stage 1: Build Axis I.S. ACAP
 FROM axisecp/acap-native-sdk:12.2.0-aarch64 AS builder
 COPY app/ /opt/app/
 RUN acap-build /opt/app
@@ -414,7 +414,7 @@ RUN acap-build /opt/app
 # Stage 2: Runtime
 FROM arm64v8/ubuntu:22.04
 COPY --from=builder /opt/app/axion /usr/local/bin/
-COPY --from=builder /opt/app/models/ /usr/local/share/axion/models/
+COPY --from=builder /opt/app/models/ /usr/local/share/axis-is/models/
 ```
 
 #### Resource Limits (Inferred Pattern)
@@ -442,7 +442,7 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 ```
 
-**AXION Pattern:**
+**Axis I.S. Pattern:**
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD [ -f /tmp/axion.pid ] && kill -0 $(cat /tmp/axion.pid) || exit 1
@@ -472,7 +472,7 @@ jobs:
           docker push axion:${VERSION}
 ```
 
-**AXION Application:**
+**Axis I.S. Application:**
 - Auto-build on Dockerfile changes
 - Version tagging from manifest.json
 - Only push on main branch (not PRs)
@@ -496,7 +496,7 @@ Results in:
 
 ---
 
-## 6. Consolidated Recommendations for AXION
+## 6. Consolidated Recommendations for Axis I.S.
 
 ### Camera-Side Implementation
 
@@ -554,7 +554,7 @@ async def publish_with_retry(client, topic, payload):
 #### 2. Credential Management
 ```python
 # Store in package directory, not system-wide
-CREDENTIALS_PATH = "/usr/local/packages/axion/config/claude-api-key"
+CREDENTIALS_PATH = "/usr/local/packages/axis-is/config/claude-api-key"
 ```
 
 #### 3. Health Monitoring
@@ -602,7 +602,7 @@ larodConnection* conn = larodConnect(NULL, &error);
 
 larodModel* model = larodLoadModel(
     conn,
-    "/usr/local/packages/axion/models/yolov5n_int8.tflite",
+    "/usr/local/packages/axis-is/models/yolov5n_int8.tflite",
     LAROD_ACCESS_PRIVATE,
     "tflite",
     LAROD_CHIP_DLPU,
@@ -694,7 +694,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy built artifacts
 COPY --from=builder /opt/app/axion /usr/local/bin/
-COPY --from=builder /opt/app/models/ /usr/local/share/axion/models/
+COPY --from=builder /opt/app/models/ /usr/local/share/axis-is/models/
 
 # Runtime user
 RUN useradd -m -s /bin/bash sdk
@@ -707,25 +707,25 @@ CMD ["/usr/local/bin/axion"]
 
 ## 8. Missing Pieces (Still Need to Implement)
 
-Despite all these excellent examples, AXION still needs:
+Despite all these excellent examples, Axis I.S. still needs:
 
 ### Camera-Side
 - [ ] **DLPU Shared Memory Scheduler** - No Axis example exists
-- [ ] **Metadata Extraction Logic** - Custom AXION code
+- [ ] **Metadata Extraction Logic** - Custom Axis I.S. code
 - [ ] **Scene Hash Calculation** - Custom algorithm
 - [ ] **Motion Scoring** - Custom implementation
 - [ ] **High-Frequency MQTT Streaming** - Axis examples are event-driven, not continuous
 
 ### Cloud-Side
 - [ ] **Claude Agent Integration** - No Axis examples (third-party API)
-- [ ] **Bandwidth Controller** - Custom AXION logic
+- [ ] **Bandwidth Controller** - Custom Axis I.S. logic
 - [ ] **Scene Memory** - Custom temporal tracking
 - [ ] **Frame Request Optimizer** - Custom ML decision logic
 - [ ] **Multi-Camera Coordinator** - Custom correlation engine
 
 ### Infrastructure
 - [ ] **Docker Compose Stack** - Need to create full stack
-- [ ] **Grafana Dashboards** - Custom metrics for AXION
+- [ ] **Grafana Dashboards** - Custom metrics for Axis I.S.
 - [ ] **PostgreSQL Schema** - Event storage design
 - [ ] **Redis State Structure** - Shared state format
 
@@ -744,11 +744,11 @@ Despite all these excellent examples, AXION still needs:
    - Download `yolov5n_416_416_int8.tflite`
    - Verify model metadata (input shape, output format)
 
-3. **Create AXION template based on CV SDK example**
+3. **Create Axis I.S. template based on CV SDK example**
    ```bash
    cp -r acap-computer-vision-sdk-examples/object-detector axion
    cd axion
-   # Customize for AXION
+   # Customize for Axis I.S.
    ```
 
 4. **Implement VDO streaming + Larod inference**
@@ -816,7 +816,7 @@ git clone https://github.com/AxisCommunications/docker-caddy-bundle.git
 - Error handling patterns
 - Build system configuration
 
-### ❌ What We Must Build (AXION-Specific)
+### ❌ What We Must Build (Axis I.S.-Specific)
 - DLPU shared memory scheduler
 - Metadata extraction logic
 - Adaptive bandwidth controller
@@ -828,11 +828,11 @@ git clone https://github.com/AxisCommunications/docker-caddy-bundle.git
 ### 📊 Readiness Assessment
 - **Camera-Side Foundation:** 60% ready (VDO + Larod patterns exist)
 - **Cloud Infrastructure:** 20% ready (MQTT patterns exist, rest is custom)
-- **AXION-Specific Logic:** 0% ready (all custom implementation)
+- **Axis I.S.-Specific Logic:** 0% ready (all custom implementation)
 
 **Overall Project Readiness: ~30%**
 
-The good news: Axis provides excellent building blocks. The challenge: 70% is custom AXION logic that doesn't exist anywhere.
+The good news: Axis provides excellent building blocks. The challenge: 70% is custom Axis I.S. logic that doesn't exist anywhere.
 
 ---
 

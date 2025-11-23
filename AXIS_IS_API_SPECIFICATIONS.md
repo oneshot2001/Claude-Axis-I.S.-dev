@@ -1,4 +1,4 @@
-# AXION Platform API Specifications
+# Axis I.S. Platform API Specifications
 
 **Version:** 1.0.0
 **Date:** November 23, 2025
@@ -64,7 +64,7 @@
 
 The Camera ACAP exposes HTTP endpoints via FastCGI integration with the Axis device's Apache web server. All endpoints are authenticated using the device's user pool (same as VAPIX).
 
-**Base Path:** `/local/axion/`
+**Base Path:** `/local/axis-is/`
 
 **Authentication:** HTTP Basic Auth (Axis device credentials)
 
@@ -76,7 +76,7 @@ The Camera ACAP exposes HTTP endpoints via FastCGI integration with the Axis dev
 
 Retrieve application manifest, version, and capabilities.
 
-**URL:** `/local/axion/app`
+**URL:** `/local/axis-is/app`
 
 **Method:** `GET`
 
@@ -90,7 +90,7 @@ Retrieve application manifest, version, and capabilities.
 {
   "status": "success",
   "data": {
-    "name": "AXION",
+    "name": "Axis I.S.",
     "version": "1.0.0",
     "camera_id": "axis-camera-001",
     "capabilities": {
@@ -124,16 +124,16 @@ Retrieve application manifest, version, and capabilities.
 **Example Request:**
 
 ```bash
-curl -u user:pass http://192.168.1.100/local/axion/app
+curl -u user:pass http://192.168.1.100/local/axis-is/app
 ```
 
 ---
 
 #### 2.2.2 GET /settings - Current Configuration
 
-Retrieve current AXION configuration including MQTT, ML model, and streaming settings.
+Retrieve current Axis I.S. configuration including MQTT, ML model, and streaming settings.
 
-**URL:** `/local/axion/settings`
+**URL:** `/local/axis-is/settings`
 
 **Method:** `GET`
 
@@ -156,9 +156,9 @@ Retrieve current AXION configuration including MQTT, ML model, and streaming set
       "qos": 1,
       "keepalive": 60,
       "topics": {
-        "metadata": "axion/camera/axis-camera-001/metadata",
-        "events": "axion/camera/axis-camera-001/event",
-        "status": "axion/camera/axis-camera-001/status"
+        "metadata": "axis-is/camera/axis-camera-001/metadata",
+        "events": "axis-is/camera/axis-camera-001/event",
+        "status": "axis-is/camera/axis-camera-001/status"
       }
     },
     "model": {
@@ -200,9 +200,9 @@ Retrieve current AXION configuration including MQTT, ML model, and streaming set
 
 #### 2.2.3 POST /settings - Update Configuration
 
-Update AXION configuration. Partial updates supported (only send changed fields).
+Update Axis I.S. configuration. Partial updates supported (only send changed fields).
 
-**URL:** `/local/axion/settings`
+**URL:** `/local/axis-is/settings`
 
 **Method:** `POST`
 
@@ -295,7 +295,7 @@ Update AXION configuration. Partial updates supported (only send changed fields)
 
 Retrieve real-time health status and performance metrics.
 
-**URL:** `/local/axion/status`
+**URL:** `/local/axis-is/status`
 
 **Method:** `GET`
 
@@ -374,7 +374,7 @@ Retrieve real-time health status and performance metrics.
 
 Retrieve the most recent frame metadata without full frame data.
 
-**URL:** `/local/axion/metadata`
+**URL:** `/local/axis-is/metadata`
 
 **Method:** `GET`
 
@@ -457,7 +457,7 @@ Retrieve the most recent frame metadata without full frame data.
 
 Request a full frame by timestamp. Returns JPEG-encoded frame.
 
-**URL:** `/local/axion/frame/{timestamp}`
+**URL:** `/local/axis-is/frame/{timestamp}`
 
 **Method:** `GET`
 
@@ -537,7 +537,7 @@ X-Camera-Id: axis-camera-001
 
 Send control commands to the ACAP (pause, resume, quality adjustment, etc.).
 
-**URL:** `/local/axion/control`
+**URL:** `/local/axis-is/control`
 
 **Method:** `POST`
 
@@ -682,19 +682,19 @@ MQTT is used for high-frequency, asynchronous communication between cameras and 
 
 ### 3.2 Topic Structure
 
-**Pattern:** `axion/{message_type}/{camera_id}/{sub_type}`
+**Pattern:** `axis-is/{message_type}/{camera_id}/{sub_type}`
 
 **Examples:**
 
-- `axion/camera/axis-camera-001/metadata`
-- `axion/camera/axis-camera-001/event`
-- `axion/cloud/axis-camera-001/config`
+- `axis-is/camera/axis-camera-001/metadata`
+- `axis-is/camera/axis-camera-001/event`
+- `axis-is/cloud/axis-camera-001/config`
 
 ### 3.3 Camera → Cloud Messages
 
 #### 3.3.1 Metadata Stream
 
-**Topic:** `axion/camera/{camera_id}/metadata`
+**Topic:** `axis-is/camera/{camera_id}/metadata`
 
 **QoS:** 0 (fire-and-forget, high frequency)
 
@@ -771,7 +771,7 @@ MQTT is used for high-frequency, asynchronous communication between cameras and 
 
 #### 3.3.2 Event Notification
 
-**Topic:** `axion/camera/{camera_id}/event`
+**Topic:** `axis-is/camera/{camera_id}/event`
 
 **QoS:** 1 (at-least-once delivery)
 
@@ -831,7 +831,7 @@ MQTT is used for high-frequency, asynchronous communication between cameras and 
 
 #### 3.3.3 Alert Notification
 
-**Topic:** `axion/camera/{camera_id}/alert`
+**Topic:** `axis-is/camera/{camera_id}/alert`
 
 **QoS:** 2 (exactly-once delivery)
 
@@ -878,7 +878,7 @@ MQTT is used for high-frequency, asynchronous communication between cameras and 
 
 #### 3.3.4 Status Update
 
-**Topic:** `axion/camera/{camera_id}/status`
+**Topic:** `axis-is/camera/{camera_id}/status`
 
 **QoS:** 1 (at-least-once delivery)
 
@@ -938,7 +938,7 @@ MQTT is used for high-frequency, asynchronous communication between cameras and 
 
 #### 3.3.5 Heartbeat
 
-**Topic:** `axion/camera/{camera_id}/heartbeat`
+**Topic:** `axis-is/camera/{camera_id}/heartbeat`
 
 **QoS:** 0 (fire-and-forget)
 
@@ -971,7 +971,7 @@ MQTT is used for high-frequency, asynchronous communication between cameras and 
 
 #### 3.4.1 Configuration Update
 
-**Topic:** `axion/cloud/{camera_id}/config`
+**Topic:** `axis-is/cloud/{camera_id}/config`
 
 **QoS:** 1 (at-least-once delivery)
 
@@ -1023,7 +1023,7 @@ Camera sends event message confirming config applied:
 
 #### 3.4.2 DLPU Schedule Assignment
 
-**Topic:** `axion/cloud/{camera_id}/dlpu_schedule`
+**Topic:** `axis-is/cloud/{camera_id}/dlpu_schedule`
 
 **QoS:** 1 (at-least-once delivery)
 
@@ -1069,7 +1069,7 @@ Camera sends status update with current slot assignment.
 
 #### 3.4.3 Frame Request
 
-**Topic:** `axion/cloud/{camera_id}/frame_request`
+**Topic:** `axis-is/cloud/{camera_id}/frame_request`
 
 **QoS:** 1 (at-least-once delivery)
 
@@ -1135,7 +1135,7 @@ Camera sends event message with frame delivery status:
 
 #### 3.4.4 Control Command
 
-**Topic:** `axion/cloud/{camera_id}/command`
+**Topic:** `axis-is/cloud/{camera_id}/command`
 
 **QoS:** 1 (at-least-once delivery)
 
@@ -1195,7 +1195,7 @@ conn_opts.connectTimeout = 30;
 
 // Last Will and Testament (LWT)
 MQTTAsync_willOptions will_opts = MQTTAsync_willOptions_initializer;
-will_opts.topicName = "axion/camera/axis-camera-001/status";
+will_opts.topicName = "axis-is/camera/axis-camera-001/status";
 will_opts.message = "{\"state\":\"offline\",\"timestamp\":\"2025-11-23T10:30:00Z\"}";
 will_opts.qos = 1;
 will_opts.retained = 1;
@@ -1209,8 +1209,8 @@ import asyncio_mqtt as aiomqtt
 
 async def mqtt_loop():
     async with aiomqtt.Client("192.168.1.50") as client:
-        await client.subscribe("axion/camera/+/metadata")
-        await client.subscribe("axion/camera/+/event")
+        await client.subscribe("axis-is/camera/+/metadata")
+        await client.subscribe("axis-is/camera/+/event")
 
         async for message in client.messages:
             await handle_message(message.topic, message.payload)
@@ -1473,7 +1473,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
     "api_credentials": {
       "username": "axion_cam_005",
       "password": "generated_secret_123",
-      "mqtt_topic_prefix": "axion/camera/axis-camera-005"
+      "mqtt_topic_prefix": "axis-is/camera/axis-camera-005"
     },
     "setup_url": "https://192.168.1.105/index.html#apps",
     "created_at": "2025-11-23T10:30:00Z"
@@ -1912,7 +1912,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 {
   "data": {
     "system": {
-      "name": "AXION Production",
+      "name": "Axis I.S. Production",
       "environment": "production",
       "version": "1.0.0"
     },
@@ -2707,13 +2707,13 @@ Content-Encoding: br
 4. **Extract metadata** (detections, scene hash)
 5. **Detect scene change** (hash comparison)
 6. **Publish metadata via MQTT** (QoS 0, 10 FPS)
-   - Topic: `axion/camera/axis-camera-001/metadata`
+   - Topic: `axis-is/camera/axis-camera-001/metadata`
 7. **Publish scene change event** (QoS 1, on change)
-   - Topic: `axion/camera/axis-camera-001/event`
+   - Topic: `axis-is/camera/axis-camera-001/event`
 8. **Cloud ingests metadata** (Redis + PostgreSQL)
 9. **Cloud decides frame request needed**
 10. **Cloud publishes frame request** (QoS 1)
-    - Topic: `axion/cloud/axis-camera-001/frame_request`
+    - Topic: `axis-is/cloud/axis-camera-001/frame_request`
 11. **Camera retrieves frame from cache**
 12. **Camera uploads frame to cloud storage**
 13. **Camera publishes frame delivered event**
@@ -2745,7 +2745,7 @@ cJSON_AddBoolToObject(scene, "changed", scene_changed);
 cJSON_AddItemToObject(metadata, "scene", scene);
 
 char* json = cJSON_PrintUnformatted(metadata);
-MQTT_Publish("axion/camera/axis-camera-001/metadata", json, 0, 0);
+MQTT_Publish("axis-is/camera/axis-camera-001/metadata", json, 0, 0);
 free(json);
 cJSON_Delete(metadata);
 ```
@@ -2759,7 +2759,7 @@ import json
 
 async def mqtt_handler():
     async with aiomqtt.Client("192.168.1.50") as client:
-        await client.subscribe("axion/camera/+/metadata")
+        await client.subscribe("axis-is/camera/+/metadata")
 
         async for message in client.messages:
             camera_id = message.topic.split('/')[2]

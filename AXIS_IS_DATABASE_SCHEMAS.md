@@ -1,4 +1,4 @@
-# AXION Database Schemas
+# Axis I.S. Database Schemas
 
 **Version:** 1.0.0
 **Date:** 2025-11-23
@@ -23,7 +23,7 @@
 
 ### Overview
 
-PostgreSQL serves as the persistent event store for AXION, handling:
+PostgreSQL serves as the persistent event store for Axis I.S., handling:
 - Long-term event storage (motion, detections, alerts)
 - Claude analysis results and insights
 - System audit logs and metrics
@@ -778,7 +778,7 @@ CREATE TABLE cameras (
     active_fps INTEGER,
     active_quality INTEGER, -- 1-100
 
-    -- AXION Configuration
+    -- Axis I.S. Configuration
     metadata_extraction_enabled BOOLEAN DEFAULT TRUE,
     send_to_claude BOOLEAN DEFAULT TRUE,
     dlpu_priority INTEGER DEFAULT 5, -- 1-10
@@ -820,7 +820,7 @@ CREATE TRIGGER trigger_cameras_updated_at
 
 ### Overview
 
-Redis provides real-time state management for AXION with sub-millisecond access times:
+Redis provides real-time state management for Axis I.S. with sub-millisecond access times:
 - Camera state and current metrics
 - DLPU scheduler coordination
 - Bandwidth allocation tracking
@@ -1150,7 +1150,7 @@ EXPIRE axion:claude:CAM001:context 600
 # ============================================================================
 
 # Add failed message
-LPUSH axion:queue:mqtt:failed '{"topic":"axion/CAM001/event","payload":"...","attempts":1,"last_error":"connection_timeout","queued_at":1732377623}'
+LPUSH axion:queue:mqtt:failed '{"topic":"axis-is/CAM001/event","payload":"...","attempts":1,"last_error":"connection_timeout","queued_at":1732377623}'
 
 # Get next message to retry
 RPOP axion:queue:mqtt:failed
@@ -1169,14 +1169,14 @@ LRANGE axion:queue:mqtt:failed -1 -1
 # ============================================================================
 
 # Schedule retry (exponential backoff)
-ZADD axion:queue:mqtt:retry 1732377683 '{"topic":"axion/CAM001/event","payload":"...","attempts":2}'
+ZADD axion:queue:mqtt:retry 1732377683 '{"topic":"axis-is/CAM001/event","payload":"...","attempts":2}'
 # Retry in 60 seconds
 
 # Get messages ready for retry
 ZRANGEBYSCORE axion:queue:mqtt:retry -inf NOW
 
 # Remove after successful retry
-ZREM axion:queue:mqtt:retry '{"topic":"axion/CAM001/event",...}'
+ZREM axion:queue:mqtt:retry '{"topic":"axis-is/CAM001/event",...}'
 
 # ============================================================================
 # DEAD LETTER QUEUE - Failed after max retries
@@ -1184,7 +1184,7 @@ ZREM axion:queue:mqtt:retry '{"topic":"axion/CAM001/event",...}'
 # Type: List
 # ============================================================================
 
-LPUSH axion:queue:mqtt:dead_letter '{"topic":"axion/CAM001/event","payload":"...","attempts":5,"final_error":"max_retries_exceeded","failed_at":1732377923}'
+LPUSH axion:queue:mqtt:dead_letter '{"topic":"axis-is/CAM001/event","payload":"...","attempts":5,"final_error":"max_retries_exceeded","failed_at":1732377923}'
 
 # Monitor dead letter queue size
 LLEN axion:queue:mqtt:dead_letter
@@ -1254,7 +1254,7 @@ ZREMRANGEBYSCORE axion:ratelimit:camera:claude_calls -inf (NOW-3600)
 
 ### 2.8 Redis Configuration
 
-**Recommended redis.conf settings for AXION:**
+**Recommended redis.conf settings for Axis I.S.:**
 
 ```conf
 # Memory Management
@@ -1393,7 +1393,7 @@ ALTER TABLE claude_analyses ALTER COLUMN claude_response SET STORAGE EXTERNAL;
 
 ```sql
 -- ============================================================================
--- AXION Database Initial Schema
+-- Axis I.S. Database Initial Schema
 -- Migration: 001
 -- Description: Create core tables and partitions
 -- ============================================================================
@@ -1533,7 +1533,7 @@ COMMIT;
 
 ```ini
 # ============================================================================
-# PostgreSQL Configuration for AXION
+# PostgreSQL Configuration for Axis I.S.
 # Hardware: 16GB RAM, 8 CPU cores, SSD storage
 # ============================================================================
 
@@ -1924,11 +1924,11 @@ AND NOT EXISTS (
 ```bash
 #!/bin/bash
 # ============================================================================
-# AXION Database Backup Script
-# Runs daily at 2 AM via cron: 0 2 * * * /opt/axion/scripts/backup_db.sh
+# Axis I.S. Database Backup Script
+# Runs daily at 2 AM via cron: 0 2 * * * /opt/axis-is/scripts/backup_db.sh
 # ============================================================================
 
-BACKUP_DIR="/var/backups/axion/postgres"
+BACKUP_DIR="/var/backups/axis-is/postgres"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RETENTION_DAYS=30
 
@@ -1984,16 +1984,16 @@ createdb -h localhost -U postgres axion
 pg_restore -h localhost -U axion -d axion \
     --format=custom \
     --jobs=4 \
-    /var/backups/axion/postgres/axion_full_20251123_020000.dump
+    /var/backups/axis-is/postgres/axion_full_20251123_020000.dump
 
 # 2. Restore single partition (e.g., lost current day data)
 pg_restore -h localhost -U axion -d axion \
     --table=camera_events_2025_11_23 \
-    /var/backups/axion/postgres/camera_events_2025_11_23_020000.dump
+    /var/backups/axis-is/postgres/camera_events_2025_11_23_020000.dump
 
 # 3. Restore schema only (for new environment)
 psql -h localhost -U axion -d axion \
-    -f /var/backups/axion/postgres/axion_schema_20251123_020000.sql
+    -f /var/backups/axis-is/postgres/axion_schema_20251123_020000.sql
 
 # 4. Point-in-time recovery (requires WAL archiving)
 pg_basebackup -h localhost -U postgres -D /var/lib/postgresql/data_restore
@@ -2010,7 +2010,7 @@ pg_basebackup -h localhost -U postgres -D /var/lib/postgresql/data_restore
 # Redis Backup Script
 # ============================================================================
 
-REDIS_BACKUP_DIR="/var/backups/axion/redis"
+REDIS_BACKUP_DIR="/var/backups/axis-is/redis"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # 1. Trigger Redis save
@@ -2126,4 +2126,4 @@ This comprehensive database schema provides:
 
 **Document Version:** 1.0.0
 **Last Updated:** 2025-11-23
-**Maintainer:** AXION Development Team
+**Maintainer:** Axis I.S. Development Team

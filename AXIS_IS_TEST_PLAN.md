@@ -1,4 +1,4 @@
-# AXION Platform - Comprehensive Test Plan
+# Axis I.S. Platform - Comprehensive Test Plan
 **Version:** 1.0
 **Date:** November 23, 2025
 **Author:** QA Architect - Distributed Systems & Edge Computing
@@ -27,7 +27,7 @@
 
 ## Executive Summary
 
-The AXION platform is a distributed edge computing system combining real-time video analytics on Axis cameras with cloud-based AI processing via Claude. This test plan addresses the unique challenges of:
+The Axis I.S. platform is a distributed edge computing system combining real-time video analytics on Axis cameras with cloud-based AI processing via Claude. This test plan addresses the unique challenges of:
 
 - **Edge Resource Constraints** - Limited DLPU access, 700MB memory ceiling, shared compute
 - **Network Reliability** - MQTT message delivery, retry logic, bandwidth adaptation
@@ -235,7 +235,7 @@ The AXION platform is a distributed edge computing system combining real-time vi
   larodConnection* conn = larodConnect(NULL, &error);
   larodModel* model = larodLoadModel(
       conn,
-      "/usr/local/packages/axion/models/yolov5n_int8.tflite",
+      "/usr/local/packages/axis-is/models/yolov5n_int8.tflite",
       LAROD_ACCESS_PRIVATE,
       "tflite",
       LAROD_CHIP_DLPU,
@@ -605,7 +605,7 @@ The AXION platform is a distributed edge computing system combining real-time vi
 - **Objective:** Verify messages published by camera are received by broker
 - **Test Data:** 1000 metadata messages
 - **Procedure:**
-  1. Subscribe to topic `axion/camera/CAM-001/metadata`
+  1. Subscribe to topic `axis-is/camera/CAM-001/metadata`
   2. Camera publishes 1000 messages
   3. Count received messages
 - **Expected Result:** ≥995 messages received (≥99.5% delivery)
@@ -636,8 +636,8 @@ The AXION platform is a distributed edge computing system combining real-time vi
 - **Objective:** Verify broker routes messages to cloud subscribers
 - **Test Data:** 10 cameras publishing metadata
 - **Procedure:**
-  1. 10 cameras publish to topics `axion/camera/{CAM-ID}/metadata`
-  2. Cloud service subscribes to `axion/camera/+/metadata`
+  1. 10 cameras publish to topics `axis-is/camera/{CAM-ID}/metadata`
+  2. Cloud service subscribes to `axis-is/camera/+/metadata`
   3. Verify all messages routed to cloud service
 - **Expected Result:** 100% of messages routed correctly
 - **Pass/Fail:** PASS if routing accuracy = 100%
@@ -650,10 +650,10 @@ The AXION platform is a distributed edge computing system combining real-time vi
 - **Procedure:**
   ```python
   # Subscribe to all camera metadata
-  client.subscribe("axion/camera/+/metadata")
+  client.subscribe("axis-is/camera/+/metadata")
 
   # Subscribe to all events from CAM-001
-  client.subscribe("axion/camera/CAM-001/#")
+  client.subscribe("axis-is/camera/CAM-001/#")
 
   # Verify messages received as expected
   ```
@@ -886,7 +886,7 @@ The AXION platform is a distributed edge computing system combining real-time vi
 - **Test Data:** 100% CPU load from competing processes
 - **Procedure:**
   1. Start CPU stress test: `stress-ng --cpu 4`
-  2. Run AXION camera application
+  2. Run Axis I.S. camera application
   3. Measure inference FPS
   4. Verify no deadlocks or hangs
 - **Expected Result:** Reduced FPS but continued operation
@@ -899,7 +899,7 @@ The AXION platform is a distributed edge computing system combining real-time vi
 - **Test Data:** Network saturated with iperf traffic
 - **Procedure:**
   1. Start iperf server/client to saturate network
-  2. Run AXION system
+  2. Run Axis I.S. system
   3. Verify bandwidth controller reduces quality
   4. Verify metadata still delivered
 - **Expected Result:** Quality reduced, metadata delivered
@@ -1428,7 +1428,7 @@ The AXION platform is a distributed edge computing system combining real-time vi
 - **Procedure:**
   ```python
   # Attempt to publish to unauthorized topics
-  client.publish("axion/camera/../../admin/commands", "malicious")
+  client.publish("axis-is/camera/../../admin/commands", "malicious")
 
   # Verify publish rejected
   ```
@@ -1473,9 +1473,9 @@ The AXION platform is a distributed edge computing system combining real-time vi
 - **Procedure:**
   ```bash
   # Search logs for credentials
-  grep -r "password" /var/log/axion/
-  grep -r "api_key" /var/log/axion/
-  grep -r "secret" /var/log/axion/
+  grep -r "password" /var/log/axis-is/
+  grep -r "api_key" /var/log/axis-is/
+  grep -r "secret" /var/log/axis-is/
 
   # Verify no matches
   ```
@@ -1681,7 +1681,7 @@ Camera 3 (192.168.100.103) ──┘                    ├── Mosquitto
 
 ```yaml
 # .github/workflows/test.yml
-name: AXION Test Suite
+name: Axis I.S. Test Suite
 
 on: [push, pull_request]
 
@@ -1848,7 +1848,7 @@ class MockCamera:
 ```json
 {
   "dashboard": {
-    "title": "AXION Test Metrics",
+    "title": "Axis I.S. Test Metrics",
     "panels": [
       {
         "title": "Test Pass Rate",
@@ -1884,7 +1884,7 @@ pytest --html=report.html --self-contained-html
 # Send email after nightly tests
 def send_test_report(results):
     summary = f"""
-    AXION Nightly Test Results - {date.today()}
+    Axis I.S. Nightly Test Results - {date.today()}
 
     Total Tests: {results['total']}
     Passed: {results['passed']} ({results['pass_rate']:.1f}%)
@@ -1895,7 +1895,7 @@ def send_test_report(results):
 
     Full report: https://jenkins.example.com/job/axion-tests/
     """
-    send_email(to="team@example.com", subject="AXION Test Report", body=summary)
+    send_email(to="team@example.com", subject="Axis I.S. Test Report", body=summary)
 ```
 
 ---
@@ -2104,7 +2104,7 @@ def send_test_report(results):
 
 ## Appendix A: Critical Gotchas Test Coverage
 
-Based on the AXION implementation guide, these critical gotchas MUST be tested:
+Based on the Axis I.S. implementation guide, these critical gotchas MUST be tested:
 
 ### Gotcha 1: VDO Buffer Reference Counting
 - **Test Coverage:** UT-VDO-001, REL-MEM-003

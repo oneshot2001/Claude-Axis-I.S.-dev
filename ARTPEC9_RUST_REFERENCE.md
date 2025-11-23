@@ -243,7 +243,7 @@ async fn main() -> Result<()> {
 
 ---
 
-## Critical Considerations for AXION
+## Critical Considerations for Axis I.S.
 
 ### 1. Our POC Uses Docker (AXIS OS 11 Style)
 - **Impact:** Won't work on AXIS OS 12
@@ -265,7 +265,7 @@ async fn main() -> Result<()> {
 
 ---
 
-## Recommendations for AXION
+## Recommendations for Axis I.S.
 
 ### Immediate (POC)
 - Continue with C POC for AXIS OS 11 cameras
@@ -303,4 +303,4 @@ async fn main() -> Result<()> {
 
 **Document Added:** November 23, 2025  
 **Relevance:** Critical for AXIS OS 12 compatibility  
-**Action Required:** Determine target OS version for AXION deployment
+**Action Required:** Determine target OS version for Axis I.S. deployment

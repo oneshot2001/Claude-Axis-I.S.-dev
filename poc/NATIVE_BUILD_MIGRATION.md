@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The AXION POC has been successfully converted from a Docker-based ACAP (AXIS OS 11 style) to a native binary ACAP (AXIS OS 12 compatible). This migration ensures compatibility with the latest AXIS cameras while maintaining all functionality.
+The Axis I.S. POC has been successfully converted from a Docker-based ACAP (AXIS OS 11 style) to a native binary ACAP (AXIS OS 12 compatible). This migration ensures compatibility with the latest AXIS cameras while maintaining all functionality.
 
 ## What Changed
 
@@ -192,7 +192,7 @@ Camera OS
 
 - [ ] **Package contains native binary**
   ```bash
-  unzip -l *.eap | grep axion_poc
+  unzip -l *.eap | grep axis_is_poc
   # Should show ARM64 binary, not container metadata
   ```
 
@@ -205,18 +205,18 @@ Camera OS
 - [ ] **Application installs**
   ```bash
   ssh root@<camera-ip>
-  eap-list | grep axion_poc
+  eap-list | grep axis_is_poc
   ```
 
 - [ ] **Application starts**
   ```bash
-  systemctl status axion_poc
+  systemctl status axis_is_poc
   # Should show "active (running)"
   ```
 
 - [ ] **Logs show initialization**
   ```bash
-  journalctl -u axion_poc -n 50
+  journalctl -u axis_is_poc -n 50
   # Should show VDO, Larod, MQTT initialization
   ```
 
@@ -246,7 +246,7 @@ Camera OS
   ```bash
   ssh root@<camera-ip>
   free -h
-  # axion_poc should use ~200-300MB
+  # axis_is_poc should use ~200-300MB
   ```
 
 - [ ] **Inference FPS meets target**
@@ -335,14 +335,14 @@ cd ..
 ```bash
 # Could shell into container
 ssh root@<camera-ip>
-docker exec -it axion_poc sh
+docker exec -it axis_is_poc sh
 ```
 
 **After (Native):**
 ```bash
 # Direct logs only
 ssh root@<camera-ip>
-journalctl -u axion_poc -f
+journalctl -u axis_is_poc -f
 ```
 
 **Workaround:** Enhanced logging in source code, syslog integration

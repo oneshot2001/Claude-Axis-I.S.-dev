@@ -1,4 +1,4 @@
-# AXION Platform Architecture Diagrams
+# Axis I.S. Platform Architecture Diagrams
 
 **Version:** 1.0.0
 **Date:** November 23, 2025
@@ -413,7 +413,7 @@ sequenceDiagram
    - Initial publish attempt with 5s timeout
    - On failure: Queue message to local ring buffer (max 1000 messages)
    - Retry with exponential backoff: 1s, 2s, 4s
-   - Ultimate fallback: Write to SD card (`/var/spool/axion/pending/`)
+   - Ultimate fallback: Write to SD card (`/var/spool/axis-is/pending/`)
 
 2. **Sequence Number Tracking:**
    - Monotonic counter incremented per message
@@ -461,7 +461,7 @@ graph TB
         MOSQUITTO[mosquitto:2.0<br/>1GB RAM<br/>Port 1883/8883]
         REDIS_C[redis:7-alpine<br/>2GB RAM<br/>Port 6379]
         POSTGRES_C[postgres:16<br/>8GB RAM<br/>Port 5432]
-        AXION_COORD[axion-coordinator<br/>4GB RAM<br/>Python 3.11]
+        Axis I.S._COORD[axion-coordinator<br/>4GB RAM<br/>Python 3.11]
         GRAFANA[grafana/grafana<br/>1GB RAM<br/>Port 3000]
     end
 
@@ -473,12 +473,12 @@ graph TB
     DOCKER --> MOSQUITTO
     DOCKER --> REDIS_C
     DOCKER --> POSTGRES_C
-    DOCKER --> AXION_COORD
+    DOCKER --> Axis I.S._COORD
     DOCKER --> GRAFANA
 
-    AXION_COORD --> MOSQUITTO
-    AXION_COORD --> REDIS_C
-    AXION_COORD --> POSTGRES_C
+    Axis I.S._COORD --> MOSQUITTO
+    Axis I.S._COORD --> REDIS_C
+    Axis I.S._COORD --> POSTGRES_C
 
     style CameraNet fill:#e1f5ff
     style CloudHost fill:#f3e5f5
@@ -628,4 +628,4 @@ This architecture delivers a production-ready distributed edge-cloud AI system w
 
 **Document Version:** 1.0.0
 **Last Updated:** November 23, 2025
-**Maintained By:** AXION Architecture Team
+**Maintained By:** Axis I.S. Architecture Team

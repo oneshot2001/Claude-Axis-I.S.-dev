@@ -1,4 +1,4 @@
-# AXION POC - Native Binary Conversion Summary
+# Axis I.S. POC - Native Binary Conversion Summary
 
 **Date:** November 23, 2025
 **Conversion Status:** COMPLETE
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The AXION POC has been successfully converted from Docker-based ACAP (AXIS OS 11 style) to native binary ACAP (AXIS OS 12 compatible). This conversion ensures the POC works on the latest AXIS cameras while maintaining backwards compatibility with AXIS OS 11.
+The Axis I.S. POC has been successfully converted from Docker-based ACAP (AXIS OS 11 style) to native binary ACAP (AXIS OS 12 compatible). This conversion ensures the POC works on the latest AXIS cameras while maintaining backwards compatibility with AXIS OS 11.
 
 **Key Achievement:** Zero source code changes required - only build process and packaging were modified.
 
@@ -212,7 +212,7 @@ cd /Users/matthewvisher/Documents/AI\ Planning\ and\ Projects/Make\ ACAP\ Claude
 ./build.sh
 ```
 
-**Expected output:** `axion_poc_1_0_0_aarch64.eap` (~5-10MB)
+**Expected output:** `axis_is_poc_1_0_0_aarch64.eap` (~5-10MB)
 
 ### 2. Deploy
 
@@ -225,10 +225,10 @@ cd /Users/matthewvisher/Documents/AI\ Planning\ and\ Projects/Make\ ACAP\ Claude
 
 ```bash
 # Check application status
-ssh root@<camera-ip> "systemctl status axion_poc"
+ssh root@<camera-ip> "systemctl status axis_is_poc"
 
 # View logs
-ssh root@<camera-ip> "journalctl -u axion_poc -f"
+ssh root@<camera-ip> "journalctl -u axis_is_poc -f"
 
 # Check memory usage
 ssh root@<camera-ip> "free -h"
@@ -409,7 +409,7 @@ cd .. && ./deploy.sh <os11-camera-ip> <user> <pass>
 
 ## Conclusion
 
-The AXION POC native binary conversion is complete:
+The Axis I.S. POC native binary conversion is complete:
 
 **Completed:**
 - Modified 3 files (build.sh, manifest.json, POC_README.md)

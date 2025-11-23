@@ -1,6 +1,6 @@
-# AXION POC - Cloud-Side MQTT Subscriber
+# Axis I.S. POC - Cloud-Side MQTT Subscriber
 
-This directory contains the cloud-side components for the AXION POC.
+This directory contains the cloud-side components for the Axis I.S. POC.
 
 ## Components
 
@@ -86,8 +86,8 @@ The subscriber validates these POC objectives:
 ## MQTT Topics
 
 The subscriber listens to:
-- `axion/camera/+/metadata` - Frame metadata (10 FPS)
-- `axion/camera/+/status` - Camera online/offline status
+- `axis-is/camera/+/metadata` - Frame metadata (10 FPS)
+- `axis-is/camera/+/status` - Camera online/offline status
 
 ## Troubleshooting
 

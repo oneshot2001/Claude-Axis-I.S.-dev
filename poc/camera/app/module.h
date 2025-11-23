@@ -1,5 +1,5 @@
 /**
- * AXION Module Interface
+ * Axis I.S. Module Interface
  *
  * Defines the plugin system for modular ACAP applications.
  * All modules (Core, Detection, LPR, OCR) implement this interface.
@@ -25,10 +25,10 @@ typedef struct CoreContext CoreContext;
  * Module return codes
  */
 typedef enum {
-    AXION_MODULE_SUCCESS = 0,
-    AXION_MODULE_ERROR = -1,
-    AXION_MODULE_SKIP = 1,      // Module skipped processing this frame
-    AXION_MODULE_NOT_READY = 2  // Module not initialized
+    AXIS_IS_MODULE_SUCCESS = 0,
+    AXIS_IS_MODULE_ERROR = -1,
+    AXIS_IS_MODULE_SKIP = 1,      // Module skipped processing this frame
+    AXIS_IS_MODULE_NOT_READY = 2  // Module not initialized
 } ModuleStatus;
 
 /**

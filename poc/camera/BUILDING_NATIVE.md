@@ -1,4 +1,4 @@
-# Building AXION POC as Native Binary (AXIS OS 12)
+# Building Axis I.S. POC as Native Binary (AXIS OS 12)
 
 ## Overview
 
@@ -75,7 +75,7 @@ mv app/*.eap .
 **Compare to Docker-based ACAP:** ~100MB (includes container runtime)
 
 **Package contents:**
-- Native ARM64 binary (`axion_poc`)
+- Native ARM64 binary (`axis_is_poc`)
 - Settings files (`settings.json`, `mqtt.json`)
 - Web UI configuration
 - Manifest metadata
@@ -100,9 +100,9 @@ cd /Users/matthewvisher/Documents/AI\ Planning\ and\ Projects/Make\ ACAP\ Claude
 
 2. **Via SSH/SCP:**
    ```bash
-   scp axion_poc_1_0_0_aarch64.eap root@<camera-ip>:/tmp/
+   scp axis_is_poc_1_0_0_aarch64.eap root@<camera-ip>:/tmp/
    ssh root@<camera-ip>
-   eap-install /tmp/axion_poc_1_0_0_aarch64.eap
+   eap-install /tmp/axis_is_poc_1_0_0_aarch64.eap
    ```
 
 ## Verification
@@ -114,13 +114,13 @@ After deployment, check that application started:
 ssh root@<camera-ip>
 
 # Check if application is running
-systemctl status axion_poc
+systemctl status axis_is_poc
 
 # View application logs
-journalctl -u axion_poc -f
+journalctl -u axis_is_poc -f
 
 # Or check syslog
-tail -f /var/log/syslog | grep axion_poc
+tail -f /var/log/syslog | grep axis_is_poc
 ```
 
 ## Differences from Docker-based ACAP
@@ -159,7 +159,7 @@ docker pull axisecp/acap-native-sdk:12.2.0-aarch64-ubuntu24.04
 
 **Check:**
 1. Camera OS version: `ssh root@<camera-ip> "cat /etc/os-release"`
-2. Application logs: `journalctl -u axion_poc`
+2. Application logs: `journalctl -u axis_is_poc`
 3. Memory constraints: `free -h`
 4. Larod service: `systemctl status larod`
 
@@ -189,14 +189,14 @@ cd ..
 ./deploy.sh <camera-ip> <user> <pass>
 
 # 4. Monitor logs
-ssh root@<camera-ip> "journalctl -u axion_poc -f"
+ssh root@<camera-ip> "journalctl -u axis_is_poc -f"
 ```
 
 ### Cleaning Build Artifacts
 
 ```bash
 # Clean build files
-rm -f app/*.o app/*.eap app/axion_poc
+rm -f app/*.o app/*.eap app/axis_is_poc
 rm -f *.eap
 
 # Or run make clean
@@ -276,7 +276,7 @@ This native binary build is fully compatible with AXIS OS 12:
 
 ## Support
 
-For issues specific to AXION POC:
+For issues specific to Axis I.S. POC:
 - Check `POC_README.md` for architecture overview
 - See `NATIVE_BUILD_MIGRATION.md` for migration details
 - Review `IMPLEMENTATION_COMPLETE.md` for implementation notes

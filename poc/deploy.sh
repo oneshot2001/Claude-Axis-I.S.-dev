@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# AXION POC Deployment Script
+# Axis I.S. POC Deployment Script
 # Deploys the ACAP to an Axis camera
 #
 
@@ -29,7 +29,7 @@ if [ -z "$EAP_FILE" ]; then
     exit 1
 fi
 
-echo "====== AXION POC Deployment ======"
+echo "====== Axis I.S. POC Deployment ======"
 echo "Camera IP: $CAMERA_IP"
 echo "Username: $USERNAME"
 echo "ACAP File: $EAP_FILE"
@@ -71,7 +71,7 @@ echo "Waiting for installation to complete..."
 sleep 3
 
 # Get application ID (usually matches package name)
-APP_ID="axion_poc"
+APP_ID="axis_is_poc"
 
 # Start the application
 echo ""
@@ -120,7 +120,7 @@ echo ""
 echo "Next steps:"
 echo "1. Check camera syslog for errors:"
 echo "   ssh $USERNAME@$CAMERA_IP"
-echo "   tail -f /var/log/messages | grep axion_poc"
+echo "   tail -f /var/log/messages | grep axis_is_poc"
 echo ""
 echo "2. Monitor MQTT messages:"
 echo "   cd poc/cloud"

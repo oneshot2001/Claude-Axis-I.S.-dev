@@ -1,5 +1,5 @@
 /**
- * AXION OCR (Optical Character Recognition) Module
+ * Axis I.S. OCR (Optical Character Recognition) Module
  *
  * Detects text regions → Gemini Vision API → Extracted text
  * Priority: 30 (runs after detection and LPR)
@@ -208,7 +208,7 @@ static int ocr_init(ModuleContext* ctx, cJSON* config) {
     syslog(LOG_INFO, "[%s] Initialized (enabled=%d, model=%s, interval=%d)\n",
            MODULE_NAME, state->enabled, state->model_name, state->process_interval);
 
-    return AXION_MODULE_SUCCESS;
+    return AXIS_IS_MODULE_SUCCESS;
 }
 
 /**
@@ -217,19 +217,19 @@ static int ocr_init(ModuleContext* ctx, cJSON* config) {
 static int ocr_process(ModuleContext* ctx, FrameData* frame) {
     OCRState* state = (OCRState*)ctx->module_state;
     if (!state || !state->enabled) {
-        return AXION_MODULE_SKIP;
+        return AXIS_IS_MODULE_SKIP;
     }
 
     // Process interval throttling
     state->frame_counter++;
     if (state->frame_counter % state->process_interval != 0) {
-        return AXION_MODULE_SKIP;
+        return AXIS_IS_MODULE_SKIP;
     }
 
     // Check if frame likely contains text
     float edge_density = estimate_edge_density(frame->frame_data, frame->width, frame->height);
     if (edge_density < state->min_edge_density) {
-        return AXION_MODULE_SKIP;
+        return AXIS_IS_MODULE_SKIP;
     }
 
     // TODO: Encode full frame or ROI as JPEG
@@ -264,7 +264,7 @@ static int ocr_process(ModuleContext* ctx, FrameData* frame) {
 
     cJSON_AddItemToObject(frame->metadata->custom_data, "ocr", ocr_data);
 
-    return AXION_MODULE_SUCCESS;
+    return AXIS_IS_MODULE_SUCCESS;
 }
 
 /**

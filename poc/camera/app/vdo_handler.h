@@ -1,7 +1,7 @@
 /**
  * vdo_handler.h
  *
- * VDO (Video Data Object) stream handler for AXION POC
+ * VDO (Video Data Object) stream handler for Axis I.S. POC
  * Provides zero-copy frame capture from Axis camera sensor
  */
 
