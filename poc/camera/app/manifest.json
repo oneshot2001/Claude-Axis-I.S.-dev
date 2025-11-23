@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.6",
+  "acapPackageConf": {
+    "setup": {
+      "appName": "axion_poc",
+      "vendor": "AXION",
+      "version": "1.0.0",
+      "embeddedSdkVersion": "3.0",
+      "architecture": "aarch64",
+      "friendlyName": "AXION POC - Edge AI Surveillance (Native)",
+      "runMode": "respawn",
+      "settingsFile": "settings/settings.json"
+    },
+    "resources": {
+      "memory": {
+        "limit": "768M"
+      }
+    },
+    "configuration": {
+      "httpConfig": [
+        {
+          "access": "viewer",
+          "name": "status",
+          "type": "fastCgi"
+        },
+        {
+          "access": "viewer",
+          "name": "metadata",
+          "type": "fastCgi"
+        }
+      ],
+      "settingPages": ["mqtt.html"]
+    }
+  }
+}

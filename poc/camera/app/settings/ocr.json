@@ -1,0 +1,9 @@
+{
+	"enabled": true,
+	"gemini_api_key": "",
+	"model": "gemini-2.0-flash-exp",
+	"process_interval": 30,
+	"min_edge_density": 0.3,
+	"description": "Optical Character Recognition module with Gemini integration",
+	"note": "Set gemini_api_key to enable this module. process_interval controls how often to process frames. min_edge_density filters frames unlikely to contain text"
+}

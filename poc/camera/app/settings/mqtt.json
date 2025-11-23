@@ -1,0 +1,9 @@
+{
+  "broker": "192.168.1.50",
+  "port": 1883,
+  "clientId": "axion-camera-001",
+  "username": "",
+  "password": "",
+  "ssl": false,
+  "topic_prefix": "axion/camera"
+}

@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: axion-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-logs:/mosquitto/log
+    restart: unless-stopped
+    networks:
+      - axion-network
+
+  subscriber:
+    build: .
+    container_name: axion-subscriber
+    depends_on:
+      - mosquitto
+    environment:
+      - MQTT_BROKER=mosquitto
+      - MQTT_PORT=1883
+    command: ["python", "mqtt_subscriber.py", "--broker", "mosquitto", "--port", "1883"]
+    restart: unless-stopped
+    networks:
+      - axion-network
+
+volumes:
+  mosquitto-data:
+  mosquitto-logs:
+
+networks:
+  axion-network:
+    driver: bridge

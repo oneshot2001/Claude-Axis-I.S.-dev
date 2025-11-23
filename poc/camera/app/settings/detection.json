@@ -1,0 +1,6 @@
+{
+	"enabled": true,
+	"confidence_threshold": 0.25,
+	"model_path": "/usr/local/packages/axion_poc/models/yolov5n_int8.tflite",
+	"description": "YOLOv5n object detection module configuration"
+}
