@@ -4,6 +4,8 @@
 
 The Axis I.S. cloud service now supports multiple AI providers and models for scene analysis. Choose the right model based on your quality, speed, and cost requirements.
 
+> 🆕 **December 2024 Update:** Added support for **Gemini 3 Pro** - Google's latest multimodal AI model with enhanced reasoning capabilities!
+
 ---
 
 ## Supported Models
@@ -25,6 +27,13 @@ The Axis I.S. cloud service now supports multiple AI providers and models for sc
 - Token estimate: ~500-1000 tokens per analysis
 
 ### Gemini (Google)
+
+**Gemini 3 Pro** - 🆕 Latest & Greatest (Dec 2024)
+- Model: `gemini-3-pro`
+- Best for: State-of-the-art quality, advanced reasoning
+- Speed: Medium-Fast (1-3 seconds per analysis)
+- Cost: TBD (verify at https://ai.google.dev/pricing)
+- Note: Latest model with enhanced multimodal capabilities
 
 **Gemini 2.0 Flash** - Maximum Cost Savings
 - Model: `gemini-2.0-flash-exp`
@@ -106,7 +115,15 @@ ANTHROPIC_API_KEY=sk-ant-api-your-key-here
 CLAUDE_MODEL=claude-3-5-haiku-20241022
 ```
 
-### Option 3: Gemini Flash (Maximum Savings)
+### Option 3: Gemini 3 Pro 🆕 (Latest, High Quality)
+
+```env
+AI_PROVIDER=gemini
+GEMINI_API_KEY=AIza-your-key-here
+GEMINI_MODEL=gemini-3-pro
+```
+
+### Option 4: Gemini Flash (Maximum Savings)
 
 ```env
 AI_PROVIDER=gemini
@@ -114,7 +131,7 @@ GEMINI_API_KEY=AIza-your-key-here
 GEMINI_MODEL=gemini-2.0-flash-exp
 ```
 
-### Option 4: Gemini Pro (Balanced)
+### Option 5: Gemini 1.5 Pro (Balanced)
 
 ```env
 AI_PROVIDER=gemini
@@ -132,6 +149,7 @@ GEMINI_MODEL=gemini-1.5-pro
 |-------|---------------------|--------------|----------|---------------|
 | Claude Sonnet 4.5 | Excellent | Very High | Highest | Security-critical, complex scenes |
 | Claude Haiku 4.5 | Good | Medium-High | High | General surveillance, routine monitoring |
+| **Gemini 3 Pro** 🆕 | **Excellent** | **Very High** | **Highest** | **Latest tech, advanced reasoning** |
 | Gemini 2.0 Flash | Good | Medium | Good | High-volume, cost-sensitive deployments |
 | Gemini 1.5 Pro | Very Good | High | Very High | Balance between quality and cost |
 
@@ -141,6 +159,7 @@ GEMINI_MODEL=gemini-1.5-pro
 |-------|----------------|----------------|------------|
 | Claude Sonnet 4.5 | 2-5s | 5 | Medium |
 | Claude Haiku 4.5 | 1-3s | 5 | High |
+| **Gemini 3 Pro** 🆕 | **1-3s** | **5** | **High** |
 | Gemini 2.0 Flash | <1s | 5 | Very High |
 | Gemini 1.5 Pro | 2-4s | 5 | Medium-High |
 
@@ -391,11 +410,14 @@ To add a new provider, implement `AIAgentBase` interface and update `ai_factory.
 | Model | When to Use | Monthly Cost (Active) |
 |-------|-------------|----------------------|
 | **Claude Sonnet 4.5** | Maximum quality, security-critical | $97 |
-| **Claude Haiku 4.5** | Balanced quality/cost, recommended | $26 |
+| **Claude Haiku 4.5** | Balanced quality/cost | $26 |
+| **Gemini 3 Pro** 🆕 | Latest tech, cutting-edge quality | TBD |
 | **Gemini 2.0 Flash** | Maximum volume, minimum cost | $3 |
 | **Gemini 1.5 Pro** | Quality alternative to Claude | $34 |
 
-**Default Recommendation:** Start with **Claude Haiku 4.5** for best balance of quality, speed, and cost.
+**Default Recommendation:**
+- **General Use:** Start with **Claude Haiku 4.5** for proven balance of quality, speed, and cost
+- **Cutting Edge:** Try **Gemini 3 Pro** for latest Google AI capabilities (verify pricing first)
 
 ---
 

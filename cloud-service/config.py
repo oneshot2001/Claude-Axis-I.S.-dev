@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     # Gemini API Settings
     gemini_api_key: Optional[str] = None  # Required if ai_provider="gemini"
-    gemini_model: str = "gemini-2.0-flash-exp"  # or "gemini-1.5-pro"
+    gemini_model: str = "gemini-3-pro"  # or "gemini-2.0-flash-exp", "gemini-1.5-pro"
     gemini_timeout: int = 30
 
     # Database
