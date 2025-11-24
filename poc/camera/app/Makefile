@@ -5,7 +5,8 @@ CORE_OBJS = main.o core.o module_utils.o vdo_handler.o larod_handler.o dlpu_basi
             ACAP.o MQTT.o CERTS.o cJSON.o
 
 # Detection module (always included)
-MODULE_OBJS = detection_module.o
+# Frame publisher module (for cloud integration)
+MODULE_OBJS = detection_module.o frame_publisher.o
 
 # All objects
 OBJS = $(CORE_OBJS) $(MODULE_OBJS)
@@ -15,7 +16,7 @@ PKGS = gio-2.0 vdostream larod
 
 # Compiler and linker flags
 CFLAGS += -Wall -Wextra -O2 $(shell pkg-config --cflags $(PKGS))
-LDFLAGS += $(shell pkg-config --libs $(PKGS)) -lpaho-mqtt3a -lm
+LDFLAGS += $(shell pkg-config --libs $(PKGS)) -lpaho-mqtt3a -lm -ljpeg
 
 all: $(PROG)
 	@echo "==================================="

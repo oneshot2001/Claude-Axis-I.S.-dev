@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # MQTT Broker
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: axis-is-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-logs:/mosquitto/log
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    restart: unless-stopped
+    networks:
+      - axis-is-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: axis-is-postgres
+    environment:
+      POSTGRES_DB: axis_is
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - axis-is-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: axis-is-redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - axis-is-network
+
+  # Cloud Service (FastAPI + MQTT Handler + Claude Agent)
+  cloud-service:
+    build: .
+    container_name: axis-is-cloud-service
+    environment:
+      - MQTT_BROKER=mosquitto
+      - MQTT_PORT=1883
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/axis_is
+      - REDIS_URL=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
+      - DEBUG=${DEBUG:-false}
+      - SCENE_MEMORY_FRAMES=${SCENE_MEMORY_FRAMES:-30}
+      - FRAME_REQUEST_COOLDOWN=${FRAME_REQUEST_COOLDOWN:-60}
+      - MOTION_THRESHOLD=${MOTION_THRESHOLD:-0.7}
+      - VEHICLE_CONFIDENCE_THRESHOLD=${VEHICLE_CONFIDENCE_THRESHOLD:-0.5}
+      - MAX_CONCURRENT_ANALYSES=${MAX_CONCURRENT_ANALYSES:-5}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - axis-is-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mosquitto-data:
+  mosquitto-logs:
+  postgres-data:
+  redis-data:
+
+networks:
+  axis-is-network:
+    driver: bridge

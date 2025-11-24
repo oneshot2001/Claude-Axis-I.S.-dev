@@ -1,0 +1,7 @@
+{
+	"enabled": true,
+	"camera_id": "axis-camera-001",
+	"jpeg_quality": 85,
+	"rate_limit_seconds": 60,
+	"description": "Frame publisher module - publishes JPEG frames on-demand via MQTT"
+}

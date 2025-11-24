@@ -1,40 +1,54 @@
-# Axis I.S. Base Module
+# Axis I.S. Platform
 
 **Version:** 2.0.0
 **Status:** Production Ready
-**Architecture:** Modular Plugin System
+**Architecture:** Edge-Cloud AI with Claude Vision Integration
 
 ---
 
 ## Overview
 
-The **Axis I.S. Base Module** is a foundation for building edge-cloud AI camera surveillance applications on AXIS cameras. It provides a complete modular plugin architecture that allows developers to create custom AI modules that integrate seamlessly with the core system.
+The **Axis I.S. Platform** is a complete edge-cloud AI camera surveillance system that combines on-camera object detection with cloud-based Claude Vision analysis. It provides intelligent scene understanding with minimal bandwidth usage through metadata streaming and on-demand frame analysis.
 
-### What's Included
+### Complete System
 
-✅ **Core Framework**
+```
+CAMERA EDGE → MQTT → CLOUD SERVICE → CLAUDE VISION → EXECUTIVE SUMMARIES
+```
+
+✅ **Camera-Side Components**
 - VDO video stream management (416x416 @ 10 FPS)
-- Larod ML inference coordination (DLPU hardware acceleration)
-- DLPU time-division multiplexing for multi-camera setups
-- MQTT publishing infrastructure
-- Module discovery and lifecycle management
+- Larod ML inference with DLPU hardware acceleration
+- Detection Module: YOLOv5n INT8 object detection (80 COCO classes)
+- Frame Publisher Module: On-demand JPEG frame transmission
+- MQTT client: Metadata streaming + frame publishing
+- Modular plugin framework for custom modules
 
-✅ **Detection Module** (Included)
-- YOLOv5n INT8 object detection (80 COCO classes)
-- Scene hashing for change detection
-- Motion detection via frame differencing
-- Configurable confidence thresholds
+✅ **Cloud-Side Components** (NEW)
+- MQTT Handler: Subscribes to camera metadata streams
+- Scene Memory: Maintains last 30 frames per camera (Redis)
+- Intelligent Triggers: Motion, vehicles, scene changes
+- Frame Request System: On-demand with rate limiting
+- Claude Vision Agent: AI scene analysis with visual context
+- PostgreSQL: Events, analyses, alerts storage
+- REST API: Query analyses, manage cameras
 
-✅ **Plugin Framework**
-- Static plugin registration system
-- Zero-copy frame pipeline
-- Per-module JSON configuration
-- Aggregated metadata publishing
-- Module priority-based execution
+✅ **Key Features**
+- **99% Bandwidth Reduction**: 2-8KB metadata vs 200KB frames
+- **Smart Frame Requests**: Only when interesting events occur
+- **Executive Summaries**: Claude analyzes scenes with visual context
+- **Multi-Camera Support**: 1-20 cameras per cloud instance
+- **Scalable Architecture**: Edge detection + cloud reasoning
 
-### What's NOT Included (Build Your Own)
+### Example Executive Summary
 
-The base module provides the framework for these modules, but they are **not implemented** to allow for custom development:
+> **Camera: axis-camera-001** (2025-11-23 14:35:22)
+>
+> A delivery truck has pulled into the loading bay and two people are unloading boxes. One person is operating a forklift in the background. Activity appears routine for afternoon deliveries. No security concerns detected. Motion level is moderate (0.72) consistent with typical loading operations.
+
+### Future Modules (Build Your Own)
+
+The platform provides the framework for custom modules:
 
 🔲 **LPR Module** - License Plate Recognition
 🔲 **OCR Module** - Optical Character Recognition
@@ -49,47 +63,87 @@ The base module provides the framework for these modules, but they are **not imp
 
 ### Prerequisites
 
+**Cloud Side:**
+- Ubuntu 20.04+ server with Docker
+- Anthropic API key (Claude Vision)
+- Public IP or domain for camera connectivity
+
+**Camera Side:**
 - AXIS camera with ARTPEC-8/9 SoC
 - AXIS OS 12.x
-- ACAP Native SDK 1.2+
+- ACAP Native SDK 1.2+ (for building)
 - YOLOv5n INT8 model (1MB)
 
-### Build & Deploy
+### Deployment Options
 
+**Option 1: Complete Deployment** (Recommended)
 ```bash
-# 1. Build the base module
+# See comprehensive step-by-step guide:
+cat DEPLOYMENT_GUIDE.md
+```
+This deploys both cloud service and camera applications.
+
+**Option 2: Camera Module Only** (Base Module)
+```bash
+# Build camera-side application
 cd poc/camera
 make clean && make
 
-# 2. Package for deployment
+# Package for deployment
 acap-build .
 
-# 3. Upload to camera
+# Upload to camera
 scp axis_is_poc_2.0.0_aarch64.eap root@<camera-ip>:/tmp/
 
-# 4. Install via web interface
+# Install via web interface
 # Navigate to: http://<camera-ip>/index.html#system/apps
-# Upload and start axis_is_poc_2.0.0_aarch64.eap
+```
+
+**Option 3: Cloud Service Only**
+```bash
+# Deploy cloud infrastructure
+cd cloud-service
+cp .env.example .env
+# Edit .env with ANTHROPIC_API_KEY
+docker-compose up -d
+
+# Verify deployment
+curl http://localhost:8000/health
 ```
 
 ### Configuration
 
-Edit `poc/camera/app/settings/core.json`:
+**Camera Configuration** (`poc/camera/app/settings/`):
+
+`core.json`:
 ```json
 {
   "camera_id": "axis-camera-001",
   "target_fps": 10,
-  "confidence_threshold": 0.25
+  "mqtt_broker": "YOUR_CLOUD_IP",
+  "mqtt_port": 1883
 }
 ```
 
-Edit `poc/camera/app/settings/detection.json`:
+`frame_publisher.json`:
 ```json
 {
   "enabled": true,
-  "confidence_threshold": 0.25,
-  "model_path": "/usr/local/packages/axis_is_poc/models/yolov5n_int8.tflite"
+  "camera_id": "axis-camera-001",
+  "jpeg_quality": 85,
+  "rate_limit_seconds": 60
 }
+```
+
+**Cloud Configuration** (`cloud-service/.env`):
+
+```env
+ANTHROPIC_API_KEY=sk-ant-api-your-key-here
+MQTT_BROKER=0.0.0.0
+MOTION_THRESHOLD=0.7
+VEHICLE_CONFIDENCE_THRESHOLD=0.5
+FRAME_REQUEST_COOLDOWN=60
+MAX_CONCURRENT_ANALYSES=5
 ```
 
 ---
@@ -237,20 +291,57 @@ LDFLAGS += -lcurl
 
 ## Architecture
 
-### Data Flow
+### Complete Edge-Cloud Data Flow
 
 ```
-VDO Stream (10 FPS)
-    ↓
-Core Module (capture frame)
-    ↓
-Detection Module (YOLOv5n)
-    ↓
-Custom Module 1 (priority 20)
-    ↓
-Custom Module 2 (priority 30)
-    ↓
-MQTT Publisher (aggregated metadata)
+┌─────────────────────────────────────────┐
+│         CAMERA EDGE (AXIS OS)           │
+├─────────────────────────────────────────┤
+│ VDO Stream (10 FPS, 416x416)            │
+│         ↓                                │
+│ Detection Module (YOLOv5n on DLPU)      │
+│         ↓                                │
+│ Metadata Extraction                     │
+│  (motion, objects, scene hash)          │
+│         ↓                                │
+│ MQTT Publish → metadata (2-8KB)  ────────┐
+│                                          │
+│ Frame Publisher ← frame_request ─────────┤
+│         ↓                                │
+│ JPEG Encode + Base64                    │
+│         ↓                                │
+│ MQTT Publish → frame (100KB)   ──────────┤
+└─────────────────────────────────────────┘
+                                           │
+                          MQTT (QoS 0/1)  │
+                                           ↓
+┌─────────────────────────────────────────────┐
+│            CLOUD SERVICE                    │
+├─────────────────────────────────────────────┤
+│ MQTT Handler                                │
+│    ├─ Subscribe: metadata (10 FPS)          │
+│    └─ Subscribe: frames (on-demand)         │
+│         ↓                                    │
+│ Scene Memory (Redis)                        │
+│    └─ Last 30 frames per camera             │
+│         ↓                                    │
+│ Trigger Logic                               │
+│    ├─ Motion > 0.7                          │
+│    ├─ Vehicle detected                      │
+│    └─ Scene change                          │
+│         ↓ (when triggered)                  │
+│ Request Frame ──────────────────────────────┘
+│         ↓ (frame arrives)
+│ Claude Vision Agent
+│    ├─ Get last 5 frames with images
+│    ├─ Build context with metadata
+│    └─ Call Claude API
+│         ↓
+│ PostgreSQL: Store analysis
+│ Redis: Update camera state
+│         ↓
+│ Executive Summary Available via API
+└─────────────────────────────────────────────┘
 ```
 
 ### Module Execution Order
