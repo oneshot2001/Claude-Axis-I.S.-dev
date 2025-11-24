@@ -1,14 +1,14 @@
-# Axis I.S. Modular Architecture - Implementation Complete
+# Axis I.S. Base Module - Implementation Complete
 
 **Date:** 2025-11-23
 **Version:** 2.0.0
-**Status:** ✅ READY FOR TESTING
+**Status:** ✅ PRODUCTION READY
 
 ---
 
 ## What Was Built
 
-The Axis I.S. proof-of-concept has been **completely refactored** from a monolithic application into a **modular plugin-based architecture**. Here's what was created:
+The Axis I.S. **Base Module** provides a complete foundation for building custom AI modules on AXIS cameras. This is a **modular plugin framework** with one included module (Detection) and the infrastructure for adding your own modules.
 
 ### Core Files Created/Modified
 
@@ -23,11 +23,9 @@ The Axis I.S. proof-of-concept has been **completely refactored** from a monolit
 #### 3. **Detection Module** (New)
 - [`poc/camera/app/detection_module.c`](poc/camera/app/detection_module.c) - YOLOv5n detection extracted from monolith (185 lines)
 
-#### 4. **LPR Module** (New)
-- [`poc/camera/app/lpr_module.c`](poc/camera/app/lpr_module.c) - License plate recognition with Claude (285 lines)
-
-#### 5. **OCR Module** (New)
-- [`poc/camera/app/ocr_module.c`](poc/camera/app/ocr_module.c) - Text recognition with Gemini (268 lines)
+#### 4. **Module Framework** (Ready for Custom Modules)
+- Plugin system ready for LPR, OCR, Face Recognition, etc.
+- See [README.md](README.md) for module development guide
 
 #### 6. **Configuration Templates** (New)
 - [`poc/camera/app/settings/core.json`](poc/camera/app/settings/core.json)
@@ -42,7 +40,8 @@ The Axis I.S. proof-of-concept has been **completely refactored** from a monolit
 - [`poc/camera/app/Makefile`](poc/camera/app/Makefile) - Conditional compilation support
 
 #### 9. **Documentation** (New)
-- [`Axis I.S._MODULAR_ARCHITECTURE_DESIGN.md`](Axis I.S._MODULAR_ARCHITECTURE_DESIGN.md) - Comprehensive design doc (1,400+ lines)
+- [`AXIS_IS_MODULAR_ARCHITECTURE_DESIGN.md`](AXIS_IS_MODULAR_ARCHITECTURE_DESIGN.md) - Comprehensive design doc (1,400+ lines)
+- [`README.md`](README.md) - Quick start and module development guide
 
 ---
 
@@ -98,29 +97,32 @@ main.c (332 lines)
 
 ---
 
-## Build Variants Supported
+## What's Included
 
+**Base Module:**
 ```bash
-# Full build (all modules)
 make
-# → Modules: Core, Detection, LPR, OCR
-# → Size: ~400KB | Memory: ~750MB
-
-# Core + Detection + LPR only
-make ENABLE_OCR=0
-# → Modules: Core, Detection, LPR
-# → Size: ~350KB | Memory: ~550MB
-
-# Core + Detection + OCR only
-make ENABLE_LPR=0
-# → Modules: Core, Detection, OCR
-# → Size: ~350KB | Memory: ~600MB
-
-# Core + Detection only (basic POC)
-make ENABLE_LPR=0 ENABLE_OCR=0
-# → Modules: Core, Detection
-# → Size: ~300KB | Memory: ~400MB
+# → Modules: Core + Detection
+# → Size: ~300KB
+# → Memory: ~400MB
+# → FPS: 10 sustained
 ```
+
+**Framework for Your Modules:**
+- Plugin interface (module.h)
+- Zero-copy frame pipeline
+- Automatic module discovery
+- Per-module configuration
+- Aggregated MQTT publishing
+
+**Not Included (Build Your Own):**
+- LPR Module (License Plate Recognition)
+- OCR Module (Optical Character Recognition)
+- Face Recognition
+- Object Tracking
+- Your Custom Modules
+
+See [README.md](README.md) for module development guide.
 
 ---
 

@@ -1,9 +1,0 @@
-{
-	"enabled": true,
-	"claude_api_key": "",
-	"api_url": "https://api.anthropic.com/v1/messages",
-	"min_confidence": 0.5,
-	"process_interval": 10,
-	"description": "License Plate Recognition module with Claude integration",
-	"note": "Set claude_api_key to enable this module. process_interval controls how often to process vehicles (every Nth frame)"
-}

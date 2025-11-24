@@ -1,19 +1,22 @@
 /**
- * Axis I.S. POC - Main Application (Modular Architecture)
+ * Axis I.S. Base Module - Main Application (Modular Architecture)
  *
- * Proof of Concept for edge-cloud AI camera surveillance system
+ * Foundation for edge-cloud AI camera surveillance system
  *
- * Modular architecture:
+ * Base module includes:
  * - Core: VDO, Larod, DLPU, MQTT coordination
  * - Detection Module: YOLOv5n object detection (always enabled)
- * - LPR Module: License plate recognition with Claude (optional)
- * - OCR Module: Text recognition with Gemini (optional)
+ * - Module Framework: Plugin system for custom modules
  *
- * Build variants:
- *   make                          # Full build (all modules)
- *   make ENABLE_LPR=0             # Core + Detection + OCR
- *   make ENABLE_OCR=0             # Core + Detection + LPR
- *   make ENABLE_LPR=0 ENABLE_OCR=0  # Core + Detection only
+ * This serves as the foundation for future modules:
+ * - LPR Module (License Plate Recognition)
+ * - OCR Module (Optical Character Recognition)
+ * - Face Recognition Module
+ * - Object Tracking Module
+ * - Custom AI modules
+ *
+ * Build:
+ *   make                          # Build base module
  */
 
 #include <stdio.h>
