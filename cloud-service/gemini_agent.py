@@ -1,12 +1,13 @@
 """
-Claude Vision Agent
-Analyzes camera scenes using Claude API with visual context
+Gemini Vision Agent
+Analyzes camera scenes using Google Gemini API with visual context
 """
 import asyncio
 import logging
 import time
+import base64
 from typing import Dict, Any, List, Optional
-from anthropic import AsyncAnthropic
+import google.generativeai as genai
 from ai_agent_base import AIAgentBase
 from scene_memory import scene_memory
 from database import db, redis
@@ -15,19 +16,22 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 
-class ClaudeAgent(AIAgentBase):
-    """Claude Vision API integration for scene analysis"""
+class GeminiAgent(AIAgentBase):
+    """Google Gemini API integration for scene analysis"""
 
     def __init__(self):
-        self.client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+        # Configure Gemini API
+        genai.configure(api_key=settings.gemini_api_key)
+        self.model = genai.GenerativeModel(settings.gemini_model)
+
         self.analyses_count = 0
-        self.total_tokens = 0
+        self.total_input_chars = 0  # Gemini doesn't expose tokens directly
         self.semaphore = asyncio.Semaphore(settings.max_concurrent_analyses)
 
     async def analyze_scene(self, camera_id: str, trigger_metadata: Dict[str, Any],
                            event_id: int) -> Optional[Dict[str, Any]]:
         """
-        Analyze a scene using Claude Vision API
+        Analyze a scene using Gemini Vision API
 
         Args:
             camera_id: Camera identifier
@@ -58,46 +62,46 @@ class ClaudeAgent(AIAgentBase):
                 # Build prompt
                 prompt = self._build_analysis_prompt(camera_id, trigger_metadata, context)
 
-                # Build message content (text + images)
-                content = [{"type": "text", "text": prompt}]
+                # Build content parts (text + images)
+                content_parts = [prompt]
 
                 # Add images (up to 5 most recent)
+                # Gemini expects raw image data, not base64 in multimodal
                 for frame in frames[-5:]:
                     if frame.get('image_base64'):
-                        content.append({
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": frame['image_base64']
-                            }
+                        # Decode base64 to bytes for Gemini
+                        image_bytes = base64.b64decode(frame['image_base64'])
+                        content_parts.append({
+                            'mime_type': 'image/jpeg',
+                            'data': image_bytes
                         })
 
                 logger.info(f"Analyzing scene: {camera_id} with {len(frames)} frames")
 
-                # Call Claude API
-                response = await self.client.messages.create(
-                    model=settings.claude_model,
-                    max_tokens=settings.claude_max_tokens,
-                    messages=[{
-                        "role": "user",
-                        "content": content
-                    }],
-                    timeout=settings.claude_timeout
+                # Call Gemini API (async via run_in_executor since Gemini SDK is sync)
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: self.model.generate_content(
+                        content_parts,
+                        generation_config=genai.types.GenerationConfig(
+                            max_output_tokens=settings.claude_max_tokens,  # Reuse setting
+                            temperature=0.4
+                        )
+                    )
                 )
 
                 # Extract summary
-                summary = response.content[0].text if response.content else "No response"
+                summary = response.text if response.text else "No response"
 
                 # Calculate duration
                 duration_ms = int((time.time() - start_time) * 1000)
 
-                # Update stats
+                # Update stats (Gemini doesn't expose token counts in same way)
                 self.analyses_count += 1
-                self.total_tokens += response.usage.input_tokens + response.usage.output_tokens
+                self.total_input_chars += len(prompt)
 
-                logger.info(f"Analysis complete: {camera_id} in {duration_ms}ms "
-                           f"(tokens: {response.usage.input_tokens + response.usage.output_tokens})")
+                logger.info(f"Analysis complete: {camera_id} in {duration_ms}ms")
 
                 # Store analysis in database
                 analysis_id = await db.store_analysis(
@@ -105,14 +109,16 @@ class ClaudeAgent(AIAgentBase):
                     event_id=event_id,
                     summary=summary,
                     full_response={
-                        'id': response.id,
-                        'model': response.model,
-                        'usage': {
-                            'input_tokens': response.usage.input_tokens,
-                            'output_tokens': response.usage.output_tokens
-                        },
-                        'stop_reason': response.stop_reason,
-                        'content': [{'text': c.text, 'type': c.type} for c in response.content]
+                        'model': settings.gemini_model,
+                        'finish_reason': response.candidates[0].finish_reason.name if response.candidates else None,
+                        'safety_ratings': [
+                            {
+                                'category': rating.category.name,
+                                'probability': rating.probability.name
+                            }
+                            for rating in response.candidates[0].safety_ratings
+                        ] if response.candidates else [],
+                        'content': summary
                     },
                     frames_analyzed=len(frames),
                     duration_ms=duration_ms
@@ -125,18 +131,18 @@ class ClaudeAgent(AIAgentBase):
                     'summary': summary,
                     'frames_analyzed': len(frames),
                     'duration_ms': duration_ms,
-                    'tokens': response.usage.input_tokens + response.usage.output_tokens,
-                    'provider': 'claude',
-                    'model': response.model
+                    'tokens': None,  # Gemini doesn't expose this easily
+                    'provider': 'gemini',
+                    'model': settings.gemini_model
                 }
 
             except Exception as e:
-                logger.error(f"Claude analysis failed: {camera_id} - {str(e)}")
+                logger.error(f"Gemini analysis failed: {camera_id} - {str(e)}")
                 return None
 
     def _build_analysis_prompt(self, camera_id: str, trigger_metadata: Dict[str, Any],
                                context: Dict[str, Any]) -> str:
-        """Build analysis prompt for Claude"""
+        """Build analysis prompt for Gemini"""
         detections = trigger_metadata.get('detections', [])
         motion_score = trigger_metadata.get('motion_score', 0)
 
@@ -198,22 +204,22 @@ Be specific and actionable. If nothing significant is happening, state that clea
     def get_stats(self) -> Dict[str, Any]:
         """Get agent statistics"""
         return {
-            'provider': 'claude',
-            'model': settings.claude_model,
+            'provider': 'gemini',
+            'model': settings.gemini_model,
             'analyses_count': self.analyses_count,
-            'total_tokens': self.total_tokens,
-            'average_tokens': self.total_tokens // self.analyses_count if self.analyses_count > 0 else 0,
+            'total_input_chars': self.total_input_chars,
+            'average_input_chars': self.total_input_chars // self.analyses_count if self.analyses_count > 0 else 0,
             'max_concurrent': settings.max_concurrent_analyses
         }
 
     def get_provider_name(self) -> str:
         """Get the AI provider name"""
-        return "claude"
+        return "gemini"
 
     def get_model_name(self) -> str:
         """Get the model name being used"""
-        return settings.claude_model
+        return settings.gemini_model
 
 
 # Global instance
-claude_agent = ClaudeAgent()
+gemini_agent = GeminiAgent()

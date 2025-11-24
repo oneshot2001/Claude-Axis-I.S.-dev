@@ -7,8 +7,9 @@ pydantic-settings==2.1.0
 # MQTT client
 aiomqtt==2.0.1
 
-# Claude API
-anthropic==0.7.7
+# AI Providers
+anthropic==0.7.7  # Claude
+google-generativeai==0.3.2  # Gemini
 
 # Database - PostgreSQL
 asyncpg==0.29.0

@@ -13,7 +13,7 @@ from typing import Dict, Any
 from config import settings
 from database import db, redis
 from mqtt_handler import mqtt_handler
-from claude_agent import claude_agent
+from ai_factory import get_ai_agent
 from scene_memory import scene_memory
 
 # Configure logging
@@ -122,7 +122,7 @@ async def stats():
 
         return {
             "mqtt": mqtt_handler.get_stats(),
-            "claude": claude_agent.get_stats(),
+            "ai_agent": get_ai_agent().get_stats(),
             "scene_memory": scene_memory.get_stats(),
             "redis": redis_stats
         }

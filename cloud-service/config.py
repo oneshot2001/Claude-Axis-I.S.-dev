@@ -22,11 +22,19 @@ class Settings(BaseSettings):
     mqtt_keepalive: int = 60
     mqtt_reconnect_delay: int = 5
 
-    # Claude API
-    anthropic_api_key: str
-    claude_model: str = "claude-3-5-sonnet-20241022"
+    # AI Provider Selection
+    ai_provider: str = "claude"  # Options: "claude", "gemini"
+
+    # Claude API Settings
+    anthropic_api_key: Optional[str] = None  # Required if ai_provider="claude"
+    claude_model: str = "claude-3-5-sonnet-20241022"  # or "claude-3-5-haiku-20241022"
     claude_max_tokens: int = 500
     claude_timeout: int = 30
+
+    # Gemini API Settings
+    gemini_api_key: Optional[str] = None  # Required if ai_provider="gemini"
+    gemini_model: str = "gemini-2.0-flash-exp"  # or "gemini-1.5-pro"
+    gemini_timeout: int = 30
 
     # Database
     database_url: str = "postgresql://postgres:postgres@localhost:5432/axis_is"
@@ -46,13 +54,13 @@ class Settings(BaseSettings):
     frame_request_cooldown: int = 60  # Minimum seconds between requests per camera
     frame_request_enabled: bool = True
 
-    # Triggers for Claude Analysis
+    # Triggers for AI Analysis
     motion_threshold: float = 0.7          # Request frame if motion > 0.7
     vehicle_confidence_threshold: float = 0.5  # Request frame if vehicle detected
     scene_change_enabled: bool = True      # Request frame on scene hash change
 
     # Performance
-    max_concurrent_analyses: int = 5  # Max concurrent Claude API calls
+    max_concurrent_analyses: int = 5  # Max concurrent AI API calls
 
     class Config:
         env_file = ".env"

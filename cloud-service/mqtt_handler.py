@@ -9,7 +9,7 @@ import uuid
 from typing import Dict, Any
 from aiomqtt import Client, Message
 from scene_memory import scene_memory
-from claude_agent import claude_agent
+from ai_factory import get_ai_agent
 from database import db, redis
 from config import settings
 
@@ -180,7 +180,7 @@ class MQTTHandler:
 
                 # Run analysis in background
                 asyncio.create_task(
-                    claude_agent.analyze_scene(camera_id, trigger_metadata, event_id)
+                    get_ai_agent().analyze_scene(camera_id, trigger_metadata, event_id)
                 )
 
                 # Clean up request metadata
