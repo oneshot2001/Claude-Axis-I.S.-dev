@@ -1,9 +1,12 @@
 {
-  "broker": "192.168.1.50",
-  "port": 1883,
-  "clientId": "axion-camera-001",
-  "username": "",
+  "address": "192.168.0.50",
+  "port": "1883",
+  "clientId": "axis-is-camera-001",
+  "user": "",
   "password": "",
-  "ssl": false,
-  "topic_prefix": "axis-is/camera"
+  "tls": false,
+  "verify": false,
+  "preTopic": "axis-is/camera",
+  "connect": true,
+  "_comment": "Windows PC Ethernet IP - MQTT broker runs here. Set connect:true to auto-connect on startup."
 }

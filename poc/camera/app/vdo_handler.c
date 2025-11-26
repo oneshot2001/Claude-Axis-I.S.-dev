@@ -10,8 +10,13 @@
 #include "vdo_handler.h"
 #include "vdo-error.h"
 
+/* Undefine system LOG macros */
+#ifdef LOG_ERR
+#undef LOG_ERR
+#endif
+
 #define LOG(fmt, args...) { syslog(LOG_INFO, fmt, ## args); printf(fmt, ## args); }
-#define LOG_ERR(fmt, args...) { syslog(LOG_ERR, fmt, ## args); fprintf(stderr, fmt, ## args); }
+#define LOG_ERR(fmt, args...) { syslog(3, fmt, ## args); fprintf(stderr, fmt, ## args); }
 
 VdoContext* Vdo_Init(unsigned int width, unsigned int height, unsigned int fps) {
     VdoContext* ctx = (VdoContext*)calloc(1, sizeof(VdoContext));
@@ -71,10 +76,11 @@ VdoBuffer* Vdo_Get_Frame(VdoContext* ctx) {
     }
 
     GError* error = NULL;
-    VdoBuffer* buffer = NULL;
 
-    // Get buffer with 1 second timeout
-    if (!vdo_stream_get_buffer(ctx->stream, &buffer, 1000, &error)) {
+    // Get buffer from stream
+    VdoBuffer* buffer = vdo_stream_get_buffer(ctx->stream, &error);
+
+    if (!buffer) {
         if (error) {
             if (!vdo_error_is_expected(&error)) {
                 LOG_ERR("Unexpected VDO error: %s\n", error->message);
@@ -83,12 +89,6 @@ VdoBuffer* Vdo_Get_Frame(VdoContext* ctx) {
         } else {
             LOG_ERR("VDO get buffer failed without error\n");
         }
-        ctx->frames_dropped++;
-        return NULL;
-    }
-
-    if (!buffer) {
-        LOG_ERR("VDO buffer is NULL\n");
         ctx->frames_dropped++;
         return NULL;
     }
@@ -121,12 +121,7 @@ void Vdo_Cleanup(VdoContext* ctx) {
         ctx->frames_captured, ctx->frames_dropped);
 
     if (ctx->stream) {
-        GError* error = NULL;
-        vdo_stream_stop(ctx->stream, &error);
-        if (error) {
-            LOG_ERR("Error stopping VDO stream: %s\n", error->message);
-            g_error_free(error);
-        }
+        vdo_stream_stop(ctx->stream);
         g_object_unref(ctx->stream);
     }
 

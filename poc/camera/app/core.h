@@ -26,8 +26,8 @@ struct CoreContext {
     // DLPU coordination
     DlpuContext* dlpu;
 
-    // MQTT client
-    MQTTContext* mqtt;
+    // MQTT client (opaque pointer)
+    void* mqtt;
 
     // Module management
     ModuleInterface** modules;
@@ -93,5 +93,14 @@ void core_api_publish_metadata(CoreContext* ctx, MetadataFrame* meta);
 void core_api_log(int level, const char* module, const char* format, ...);
 int core_api_http_post(const char* url, const char* headers,
                        const char* body, char** response);
+
+/**
+ * Get the shared Larod context from core
+ * Modules should use this instead of creating their own Larod connection
+ * to avoid DLPU resource conflicts.
+ *
+ * @return LarodContext pointer, or NULL if not initialized
+ */
+LarodContext* core_api_get_larod(void);
 
 #endif // CORE_H

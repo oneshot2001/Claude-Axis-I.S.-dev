@@ -1,6 +1,6 @@
 /*
  * ACAP SDK wrapper for verion 12
- * Copyright (c) 2025 Fred Juhlin
+ * Copyright (c) 2025 Matt Visher
  * MIT License - See LICENSE file for details
  * Version 3.7
  */

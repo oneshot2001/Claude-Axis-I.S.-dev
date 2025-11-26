@@ -13,12 +13,22 @@
 #include <stdarg.h>
 #include <sys/time.h>
 #include <curl/curl.h>
+#include <ctype.h>
+
+/* Undefine system LOG macros */
+#ifdef LOG_WARN
+#undef LOG_WARN
+#endif
 
 #define LOG(level, fmt, args...) syslog(level, fmt, ## args)
+#define LOG_WARN 4
 
 /* External module registry (linker provides these symbols) */
-extern ModuleInterface* __start_axion_modules __attribute__((weak));
-extern ModuleInterface* __stop_axion_modules __attribute__((weak));
+extern ModuleInterface* __start_axis_is_modules __attribute__((weak));
+extern ModuleInterface* __stop_axis_is_modules __attribute__((weak));
+
+/* Global core context pointer for modules to access shared resources */
+static CoreContext* g_core_context = NULL;
 
 /**
  * Get current timestamp in microseconds
@@ -74,18 +84,20 @@ int core_init(CoreContext** ctx, const char* config_file) {
         goto error;
     }
 
-    // Initialize VDO stream
-    core->vdo = Vdo_Init(416, 416, target_fps);
+    // Initialize VDO stream at 640x640 to match YOLOv5n model from Axis Model Zoo
+    core->vdo = Vdo_Init(640, 640, target_fps);
     if (!core->vdo) {
         LOG(LOG_ERR, "Core: Failed to initialize VDO\n");
         goto error;
     }
 
-    // Initialize Larod inference
-    core->larod = Larod_Init("/usr/local/packages/axis_is_poc/models/yolov5n_int8.tflite", conf_threshold);
+    // Initialize Larod inference (optional - POC can run without ML model)
+    // Model: YOLOv5n for ARTPEC-8 from Axis Model Zoo (640x640 INT8)
+    core->larod = Larod_Init("/usr/local/packages/axis_is_poc/models/yolov5n_artpec8_coco_640.tflite", conf_threshold);
     if (!core->larod) {
-        LOG(LOG_ERR, "Core: Failed to initialize Larod\n");
-        goto error;
+        LOG(LOG_WARNING, "Core: Larod init failed - running without ML inference (model not found)\n");
+        LOG(LOG_INFO, "Core: To enable ML inference, add yolov5n_int8.tflite to models/ directory\n");
+        // Continue without ML - other features still work
     }
 
     // Initialize MQTT (external - already initialized by main)
@@ -104,6 +116,9 @@ int core_init(CoreContext** ctx, const char* config_file) {
     // Initialize frame tracking
     core->current_frame_id = 0;
     core->start_time_us = get_timestamp_us();
+
+    // Set global context pointer for module access to shared resources
+    g_core_context = core;
 
     LOG(LOG_INFO, "Core: Initialization complete\n");
     return 0;
@@ -130,8 +145,8 @@ int core_discover_modules(CoreContext* ctx) {
     if (!ctx) return -1;
 
     // Count modules using linker symbols
-    ModuleInterface** start = &__start_axion_modules;
-    ModuleInterface** stop = &__stop_axion_modules;
+    ModuleInterface** start = &__start_axis_is_modules;
+    ModuleInterface** stop = &__stop_axis_is_modules;
 
     int count = (int)(stop - start);
     if (count <= 0) {
@@ -264,24 +279,25 @@ int core_process_frame(CoreContext* ctx) {
         return -1;
     }
 
-    // Extract VDO frame info
-    VdoFrame* frame = vdo_buffer_get_frame(buffer);
-    if (!frame) {
-        LOG(LOG_ERR, "Core: Failed to get VDO frame\n");
+    // Get frame data directly from VDO buffer
+    // Note: ACAP SDK uses VdoBuffer directly, VdoFrame functions don't exist
+    void* frame_data = vdo_buffer_get_data(buffer);
+    if (!frame_data) {
+        LOG(LOG_ERR, "Core: Failed to get frame data from buffer\n");
         Vdo_Release_Frame(ctx->vdo, buffer);
         Dlpu_Release_Slot(ctx->dlpu);
         return -1;
     }
 
-    void* frame_data = vdo_frame_get_data(frame);
-    unsigned int width = vdo_frame_get_width(frame);
-    unsigned int height = vdo_frame_get_height(frame);
-    VdoFormat format = vdo_frame_get_format(frame);
+    // Use dimensions from VdoContext (set at initialization)
+    unsigned int width = ctx->vdo->width;
+    unsigned int height = ctx->vdo->height;
+    VdoFormat format = VDO_FORMAT_YUV;  // Set during VDO init
 
     // Create frame data structure
     FrameData fdata = {
         .vdo_buffer = buffer,
-        .vdo_frame = frame,
+        .vdo_frame = NULL,  // VdoFrame type not used in ACAP SDK
         .frame_data = frame_data,
         .width = width,
         .height = height,
@@ -293,7 +309,6 @@ int core_process_frame(CoreContext* ctx) {
 
     if (!fdata.metadata) {
         LOG(LOG_ERR, "Core: Failed to create metadata\n");
-        vdo_frame_unref(frame);
         Vdo_Release_Frame(ctx->vdo, buffer);
         Dlpu_Release_Slot(ctx->dlpu);
         return -1;
@@ -323,7 +338,7 @@ int core_process_frame(CoreContext* ctx) {
 
     // Cleanup
     metadata_free(fdata.metadata);
-    vdo_frame_unref(frame);
+    // Note: No vdo_frame_unref needed - VdoFrame not used in ACAP SDK
     Vdo_Release_Frame(ctx->vdo, buffer);
 
     return 0;
@@ -376,6 +391,9 @@ void core_cleanup(CoreContext* ctx) {
         cJSON_Delete(ctx->config);
     }
 
+    // Clear global context pointer
+    g_core_context = NULL;
+
     free(ctx);
     LOG(LOG_INFO, "Core: Cleanup complete\n");
 }
@@ -414,7 +432,7 @@ void core_api_publish_metadata(CoreContext* ctx, MetadataFrame* meta) {
 
     // Build topic
     char topic[128];
-    snprintf(topic, sizeof(topic), "axion/camera/%s/metadata", camera_id);
+    snprintf(topic, sizeof(topic), "axis-is/camera/%s/metadata", camera_id);
 
     // Convert metadata to JSON
     cJSON* json = cJSON_CreateObject();
@@ -482,6 +500,15 @@ static size_t write_callback(void* contents, size_t size, size_t nmemb, void* us
     mem->memory[mem->size] = 0;
 
     return realsize;
+}
+
+/**
+ * Get the shared Larod context from core
+ * Modules should use this instead of creating their own Larod connection
+ * to avoid DLPU resource conflicts on ARTPEC-9 cameras.
+ */
+LarodContext* core_api_get_larod(void) {
+    return g_core_context ? g_core_context->larod : NULL;
 }
 
 int core_api_http_post(const char* url, const char* headers,

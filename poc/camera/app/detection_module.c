@@ -7,9 +7,15 @@
 
 #include "module.h"
 #include "larod_handler.h"
+#include "core.h"
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+
+/* Define LOG_WARN if not defined */
+#ifndef LOG_WARN
+#define LOG_WARN 4
+#endif
 
 #define MODULE_NAME "detection"
 #define MODULE_VERSION "1.0.0"
@@ -92,6 +98,10 @@ static float compute_motion_score(DetectionState* state, const unsigned char* fr
 
 /**
  * Module initialization
+ *
+ * NOTE: Core already initializes Larod and loads the model on the DLPU.
+ * The detection module uses the core's Larod context via core_api_get_larod().
+ * We do NOT create our own Larod connection to avoid DLPU resource conflicts.
  */
 static int detection_init(ModuleContext* ctx, cJSON* config) {
     syslog(LOG_INFO, "[%s] Initializing detection module\n", MODULE_NAME);
@@ -106,20 +116,21 @@ static int detection_init(ModuleContext* ctx, cJSON* config) {
     // Load configuration
     state->confidence_threshold = module_config_get_float(config, "confidence_threshold", 0.25);
     state->model_path = module_config_get_string(config, "model_path",
-                                                   "/usr/local/packages/axis_is_poc/models/yolov5n_int8.tflite");
+                                                   "/usr/local/packages/axis_is_poc/models/yolov5n_artpec8_coco_640.tflite");
 
-    // Initialize Larod
-    state->larod = Larod_Init(state->model_path, state->confidence_threshold);
+    // Get Larod context from core (which already initialized it)
+    // This avoids creating a duplicate DLPU connection that would fail
+    state->larod = core_api_get_larod();
     if (!state->larod) {
-        syslog(LOG_ERR, "[%s] Failed to initialize Larod\n", MODULE_NAME);
-        free(state);
-        return -1;
+        syslog(LOG_WARNING, "[%s] Core Larod not available - motion/scene analysis only\n", MODULE_NAME);
+    } else {
+        syslog(LOG_INFO, "[%s] Using core's Larod context for inference\n", MODULE_NAME);
     }
 
     ctx->module_state = state;
 
-    syslog(LOG_INFO, "[%s] Initialized with model=%s threshold=%.2f\n",
-           MODULE_NAME, state->model_path, state->confidence_threshold);
+    syslog(LOG_INFO, "[%s] Initialized (ML=%s) threshold=%.2f\n",
+           MODULE_NAME, state->larod ? "enabled" : "disabled", state->confidence_threshold);
 
     return AXIS_IS_MODULE_SUCCESS;
 }
@@ -129,38 +140,45 @@ static int detection_init(ModuleContext* ctx, cJSON* config) {
  */
 static int detection_process(ModuleContext* ctx, FrameData* frame) {
     DetectionState* state = (DetectionState*)ctx->module_state;
-    if (!state || !state->larod) {
+    if (!state) {
         return AXIS_IS_MODULE_NOT_READY;
     }
 
-    // Run YOLOv5n inference
-    LarodResult* result = Larod_Run_Inference(state->larod, frame->vdo_buffer);
-    if (!result) {
-        syslog(LOG_WARN, "[%s] Inference failed\n", MODULE_NAME);
-        return AXIS_IS_MODULE_ERROR;
+    int num_detections = 0;
+    float inference_time_ms = 0.0f;
+
+    // Run YOLOv5n inference if Larod is available
+    if (state->larod) {
+        LarodResult* result = Larod_Run_Inference(state->larod, frame->vdo_buffer);
+        if (result) {
+            // Add detections to metadata
+            for (int i = 0; i < result->num_detections; i++) {
+                Detection det = {
+                    .class_id = result->detections[i].class_id,
+                    .confidence = result->detections[i].confidence,
+                    .x = result->detections[i].x,
+                    .y = result->detections[i].y,
+                    .width = result->detections[i].width,
+                    .height = result->detections[i].height
+                };
+                metadata_add_detection(frame->metadata, det);
+            }
+            num_detections = result->num_detections;
+            inference_time_ms = result->inference_time_ms;
+            Larod_Free_Result(result);
+        } else {
+            syslog(LOG_WARNING, "[%s] Inference failed\n", MODULE_NAME);
+        }
     }
 
-    // Add detections to metadata
-    for (int i = 0; i < result->num_detections; i++) {
-        Detection det = {
-            .class_id = result->detections[i].class_id,
-            .confidence = result->detections[i].confidence,
-            .x = result->detections[i].x,
-            .y = result->detections[i].y,
-            .width = result->detections[i].width,
-            .height = result->detections[i].height
-        };
-        metadata_add_detection(frame->metadata, det);
-    }
-
-    // Compute scene hash
+    // Compute scene hash (works without ML)
     if (frame->frame_data) {
         uint32_t scene_hash = 0;
         size_t frame_size = frame->width * frame->height * 3 / 2;  // YUV420 size
         compute_scene_hash((unsigned char*)frame->frame_data, frame_size, &scene_hash);
         frame->metadata->scene_hash = scene_hash;
 
-        // Compute motion score
+        // Compute motion score (works without ML)
         frame->metadata->motion_score = compute_motion_score(state,
                                                               (unsigned char*)frame->frame_data,
                                                               frame_size);
@@ -168,19 +186,20 @@ static int detection_process(ModuleContext* ctx, FrameData* frame) {
 
     // Add detection module data to custom metadata
     cJSON* detection_data = cJSON_CreateObject();
-    cJSON_AddNumberToObject(detection_data, "inference_time_ms", result->inference_time_ms);
-    cJSON_AddNumberToObject(detection_data, "num_detections", result->num_detections);
+    cJSON_AddNumberToObject(detection_data, "inference_time_ms", inference_time_ms);
+    cJSON_AddNumberToObject(detection_data, "num_detections", num_detections);
     cJSON_AddNumberToObject(detection_data, "confidence_threshold", state->confidence_threshold);
+    cJSON_AddBoolToObject(detection_data, "ml_enabled", state->larod != NULL);
     cJSON_AddItemToObject(frame->metadata->custom_data, "detection", detection_data);
-
-    // Cleanup
-    Larod_Free_Result(result);
 
     return AXIS_IS_MODULE_SUCCESS;
 }
 
 /**
  * Module cleanup
+ *
+ * NOTE: We do NOT call Larod_Cleanup() here because the Larod context
+ * is owned by core. Core will clean it up when the application shuts down.
  */
 static void detection_cleanup(ModuleContext* ctx) {
     DetectionState* state = (DetectionState*)ctx->module_state;
@@ -188,9 +207,8 @@ static void detection_cleanup(ModuleContext* ctx) {
 
     syslog(LOG_INFO, "[%s] Cleaning up\n", MODULE_NAME);
 
-    if (state->larod) {
-        Larod_Cleanup(state->larod);
-    }
+    // Note: Don't cleanup state->larod - it's borrowed from core
+    // Core owns the Larod context and will clean it up
 
     if (state->last_frame_data) {
         free(state->last_frame_data);

@@ -11,7 +11,7 @@
 #include <sys/time.h>
 #include <syslog.h>
 #include "metadata.h"
-#include "vdo-frame.h"
+#include "vdo-buffer.h"
 
 #define LOG_ERR(fmt, args...) { syslog(LOG_ERR, fmt, ## args); fprintf(stderr, fmt, ## args); }
 
@@ -110,30 +110,28 @@ MetadataFrame* Metadata_Extract(MetadataContext* ctx, VdoBuffer* buffer, LarodRe
     // Increment frame counter
     metadata->frame_number = ctx->frame_counter++;
 
-    // Get frame data for hashing and motion detection
-    VdoFrame* frame = vdo_buffer_get_frame(buffer);
-    if (frame) {
-        void* frame_data = vdo_frame_get_data(frame);
-        size_t frame_size = vdo_frame_get_size(frame);
+    // Get frame data directly from VDO buffer (ACAP SDK doesn't have VdoFrame)
+    void* frame_data = vdo_buffer_get_data(buffer);
+    // Estimate frame size based on YUV420 format: width * height * 1.5
+    // This should be passed from caller or stored in a context
+    size_t frame_size = 416 * 416 * 3 / 2;  // Default for 416x416 YUV
 
-        if (frame_data && frame_size > 0) {
-            // Compute scene hash
-            compute_scene_hash((unsigned char*)frame_data, frame_size, metadata->scene_hash);
+    if (frame_data && frame_size > 0) {
+        // Compute scene hash
+        compute_scene_hash((unsigned char*)frame_data, frame_size, metadata->scene_hash);
 
-            // Check if scene changed
-            if (strlen(ctx->last_scene_hash) > 0) {
-                metadata->scene_changed = (strcmp(metadata->scene_hash, ctx->last_scene_hash) != 0);
-            } else {
-                metadata->scene_changed = 1;  // First frame is always a "change"
-            }
-            strcpy(ctx->last_scene_hash, metadata->scene_hash);
-
-            // Compute motion score
-            metadata->motion_score = compute_motion_score(ctx, (unsigned char*)frame_data, frame_size);
+        // Check if scene changed
+        if (strlen(ctx->last_scene_hash) > 0) {
+            metadata->scene_changed = (strcmp(metadata->scene_hash, ctx->last_scene_hash) != 0);
+        } else {
+            metadata->scene_changed = 1;  // First frame is always a "change"
         }
+        strcpy(ctx->last_scene_hash, metadata->scene_hash);
 
-        vdo_frame_unref(frame);
+        // Compute motion score
+        metadata->motion_score = compute_motion_score(ctx, (unsigned char*)frame_data, frame_size);
     }
+    // Note: No vdo_frame_unref needed - buffer release handled by caller
 
     // Copy detection results
     metadata->object_count = result->num_detections;

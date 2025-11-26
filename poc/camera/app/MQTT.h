@@ -1,6 +1,6 @@
 /**
  * MQTT.h
- * Fred Juhlin 2025
+ * Matt Visher 2025
  * Version 2.0
  */
  

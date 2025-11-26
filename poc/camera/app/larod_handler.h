@@ -9,18 +9,21 @@
 #define LAROD_HANDLER_H
 
 #include "vdo-types.h"
+#include "vdo-buffer.h"
 #include "larod.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Detection structure (YOLO output) */
+/* Forward declaration - must match module.h */
+#ifndef MODULE_H
 typedef struct {
     int class_id;
     float confidence;
-    float x, y, width, height;  // Normalized coordinates (0-1)
+    float x, y, width, height;
 } Detection;
+#endif
 
 /* Larod inference result */
 typedef struct {

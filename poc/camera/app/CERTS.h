@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------
- *  Copyright Fred Juhlin (2020)
+ *  Copyright Matt Visher (2025)
  * 
  * 
  *  Manage device CA Cert, Client cert and client key

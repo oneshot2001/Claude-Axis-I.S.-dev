@@ -61,10 +61,11 @@ struct MetadataFrame {
 
 /**
  * Shared frame data passed through module pipeline
+ * Note: ACAP SDK uses VdoBuffer directly, no VdoFrame abstraction
  */
 struct FrameData {
     VdoBuffer* vdo_buffer;       // VDO buffer (zero-copy)
-    VdoFrame* vdo_frame;         // Extracted frame
+    void* vdo_frame;             // Reserved/unused (ACAP SDK doesn't have VdoFrame)
     void* frame_data;            // Raw pixel data
     unsigned int width;
     unsigned int height;
@@ -148,7 +149,7 @@ struct ModuleInterface {
         .on_stop = NULL \
     }; \
     static ModuleInterface* __module_ptr_##var_name \
-        __attribute__((used, section(".axion_modules"))) = &var_name
+        __attribute__((used, section("axis_is_modules"))) = &var_name
 
 /**
  * Utility functions for modules

@@ -1,5 +1,5 @@
 {
-  "axion": {
+  "axis_is": {
     "camera_id": "axis-camera-001",
     "target_fps": 10,
     "confidence_threshold": 0.25,

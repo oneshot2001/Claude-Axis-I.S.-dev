@@ -13,8 +13,13 @@
 #include <syslog.h>
 #include "dlpu_basic.h"
 
+/* Undefine system LOG macros */
+#ifdef LOG_ERR
+#undef LOG_ERR
+#endif
+
 #define LOG(fmt, args...) { syslog(LOG_INFO, fmt, ## args); printf(fmt, ## args); }
-#define LOG_ERR(fmt, args...) { syslog(LOG_ERR, fmt, ## args); fprintf(stderr, fmt, ## args); }
+#define LOG_ERR(fmt, args...) { syslog(3, fmt, ## args); fprintf(stderr, fmt, ## args); }
 
 #define SLOT_DURATION_MS 200  // Each camera gets 200ms slot
 #define CYCLE_DURATION_MS 1000  // Full cycle is 1 second (supports 5 cameras)

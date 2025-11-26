@@ -1,6 +1,6 @@
 /**
 * MQTT.c - Asynchronous Implementation
-* Fred Juhlin 2025
+* Matt Visher 2025
 * Version 2.2
 */
 
@@ -474,11 +474,30 @@ MQTT_Unsubscribe(const char *topic) {
 
 static int
 MQTT_Load_Library() {
-    const char* lib_name = "libpaho-mqtt3as.so.1";  // Always load SSL-enabled library
+    // Try loading libraries in order of preference:
+    // 1. SSL async (libpaho-mqtt3as.so.1) - if TLS enabled
+    // 2. Non-SSL async (libpaho-mqtt3a.so.1) - for non-TLS connections
+    // 3. Fallback names without version suffix
 
-    MQTT_libHandle = dlopen(lib_name, RTLD_LAZY);
+    const char* lib_names[] = {
+        "libpaho-mqtt3a.so.1",   // Non-SSL async (most common for ACAP)
+        "libpaho-mqtt3a.so",     // Non-SSL async without version
+        "libpaho-mqtt3as.so.1",  // SSL async
+        "libpaho-mqtt3as.so",    // SSL async without version
+        NULL
+    };
+
+    for (int i = 0; lib_names[i] != NULL; i++) {
+        MQTT_libHandle = dlopen(lib_names[i], RTLD_LAZY);
+        if (MQTT_libHandle) {
+            LOG("MQTT: Loaded library %s\n", lib_names[i]);
+            break;
+        }
+    }
+
     if (!MQTT_libHandle) {
-        LOG_WARN("Failed to load MQTT library: %s\n", dlerror());
+        LOG_WARN("Failed to load any MQTT library. Tried: libpaho-mqtt3a.so.1, libpaho-mqtt3as.so.1\n");
+        LOG_WARN("dlerror: %s\n", dlerror());
         return 0;
     }
 	

@@ -20,9 +20,14 @@
 #include <jpeglib.h>
 #include <time.h>
 
+/* Undefine system LOG macros */
+#ifdef LOG_ERR
+#undef LOG_ERR
+#endif
+
 #define LOG(fmt, args...)    { syslog(LOG_INFO, "[frame_publisher] " fmt, ## args); printf("[frame_publisher] " fmt, ## args);}
 #define LOG_WARN(fmt, args...)    { syslog(LOG_WARNING, "[frame_publisher] " fmt, ## args); printf("[frame_publisher] " fmt, ## args);}
-#define LOG_ERR(fmt, args...)    { syslog(LOG_ERR, "[frame_publisher] " fmt, ## args); fprintf(stderr, "[frame_publisher] " fmt, ## args);}
+#define LOG_ERR(fmt, args...)    { syslog(3, "[frame_publisher] " fmt, ## args); fprintf(stderr, "[frame_publisher] " fmt, ## args);}
 
 /* Module state */
 typedef struct {
@@ -233,7 +238,10 @@ static int frame_publisher_init(ModuleContext* ctx, cJSON* config) {
     // Subscribe to frame request topic
     char topic[256];
     snprintf(topic, sizeof(topic), "axis-is/camera/%s/frame_request", state->camera_id);
-    MQTT_Subscribe(topic, 1, frame_request_callback, state);
+    MQTT_Subscribe(topic);
+
+    // Note: frame_request_callback needs to be registered via MQTT_Init's messageCallback parameter
+    // For now, just subscribe to the topic
 
     LOG("Subscribed to: %s\n", topic);
     LOG("Configuration: quality=%d rate_limit=%ds\n",

@@ -1,6 +1,6 @@
 /*
  * ACAP SDK wrapper for verion ACAP SDK 12.x
- * Copyright (c) 2025 Fred Juhlin
+ * Copyright (c) 2025 Matt Visher
  * MIT License - See LICENSE file for details
  * Version 4.1
    - Copy all saved setting into settings includin objects

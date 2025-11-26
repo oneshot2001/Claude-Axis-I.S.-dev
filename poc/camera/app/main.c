@@ -37,9 +37,14 @@
 #define APP_PACKAGE "axis_is_poc"
 #define APP_VERSION "2.0.0"
 
+/* Undefine system LOG macros to avoid conflicts */
+#ifdef LOG_ERR
+#undef LOG_ERR
+#endif
+
 #define LOG(fmt, args...)    { syslog(LOG_INFO, fmt, ## args); printf(fmt, ## args);}
 #define LOG_WARN(fmt, args...)    { syslog(LOG_WARNING, fmt, ## args); printf(fmt, ## args);}
-#define LOG_ERR(fmt, args...)    { syslog(LOG_ERR, fmt, ## args); fprintf(stderr, fmt, ## args);}
+#define LOG_ERR(fmt, args...)    { syslog(3, fmt, ## args); fprintf(stderr, fmt, ## args);}
 
 /* Global state */
 static GMainLoop *main_loop = NULL;
@@ -72,7 +77,7 @@ void Main_MQTT_Status(int state) {
             LOG("MQTT: Connected successfully\n");
             // Publish connect event
             char topic[128];
-            snprintf(topic, sizeof(topic), "axion/camera/%s/status", config.camera_id);
+            snprintf(topic, sizeof(topic), "axis-is/camera/%s/status", config.camera_id);
             cJSON* status = cJSON_CreateObject();
             cJSON_AddStringToObject(status, "state", "online");
             cJSON_AddStringToObject(status, "version", APP_VERSION);
@@ -120,7 +125,7 @@ static gboolean process_frame(gpointer user_data) {
 void Settings_Updated_Callback(const char* service, cJSON* data) {
     LOG("Settings updated for service: %s\n", service);
 
-    if (strcmp(service, "axion") == 0) {
+    if (strcmp(service, "axis_is") == 0) {
         cJSON* cam_id = cJSON_GetObjectItem(data, "camera_id");
         if (cam_id && cam_id->valuestring) {
             strncpy(config.camera_id, cam_id->valuestring, sizeof(config.camera_id) - 1);
@@ -225,7 +230,7 @@ void cleanup(void) {
 
     // Publish offline status
     char topic[128];
-    snprintf(topic, sizeof(topic), "axion/camera/%s/status", config.camera_id);
+    snprintf(topic, sizeof(topic), "axis-is/camera/%s/status", config.camera_id);
     cJSON* status = cJSON_CreateObject();
     cJSON_AddStringToObject(status, "state", "offline");
     cJSON_AddNumberToObject(status, "timestamp", time(NULL));
