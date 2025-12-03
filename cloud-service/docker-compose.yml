@@ -9,9 +9,9 @@ services:
       - "1883:1883"
       - "9001:9001"
     volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto-data:/mosquitto/data
       - mosquitto-logs:/mosquitto/log
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
     restart: unless-stopped
     networks:
       - axis-is-network
@@ -22,14 +22,14 @@ services:
     container_name: axis-is-postgres
     environment:
       POSTGRES_DB: axis_is
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: axis_is
+      POSTGRES_PASSWORD: axis_is_password
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U axis_is -d axis_is"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,7 +37,7 @@ services:
     networks:
       - axis-is-network
 
-  # Redis Cache
+  # Redis Cache (Scene Memory)
   redis:
     image: redis:7-alpine
     container_name: axis-is-redis
@@ -59,19 +59,15 @@ services:
   cloud-service:
     build: .
     container_name: axis-is-cloud-service
+    env_file:
+      - .env
     environment:
+      # Override for Docker networking
+      - DATABASE_URL=postgresql://axis_is:axis_is_password@postgres:5432/axis_is
+      - REDIS_URL=redis://redis:6379/0
+      # Connect to Mosquitto container
       - MQTT_BROKER=mosquitto
       - MQTT_PORT=1883
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/axis_is
-      - REDIS_URL=redis://redis:6379
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - CLAUDE_MODEL=${CLAUDE_MODEL:-claude-3-5-sonnet-20241022}
-      - DEBUG=${DEBUG:-false}
-      - SCENE_MEMORY_FRAMES=${SCENE_MEMORY_FRAMES:-30}
-      - FRAME_REQUEST_COOLDOWN=${FRAME_REQUEST_COOLDOWN:-60}
-      - MOTION_THRESHOLD=${MOTION_THRESHOLD:-0.7}
-      - VEHICLE_CONFIDENCE_THRESHOLD=${VEHICLE_CONFIDENCE_THRESHOLD:-0.5}
-      - MAX_CONCURRENT_ANALYSES=${MAX_CONCURRENT_ANALYSES:-5}
     ports:
       - "8000:8000"
     volumes:
@@ -91,7 +87,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
 
 volumes:
   mosquitto-data:

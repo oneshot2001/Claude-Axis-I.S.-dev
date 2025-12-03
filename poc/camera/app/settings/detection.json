@@ -1,6 +1,6 @@
 {
 	"enabled": true,
 	"confidence_threshold": 0.25,
-	"model_path": "/usr/local/packages/axis_is_poc/models/yolov5n_int8.tflite",
-	"description": "YOLOv5n object detection module configuration"
+	"model_path": "/usr/local/packages/axis_is_poc/models/yolov5n_artpec8_coco_640.tflite",
+	"description": "YOLOv5n object detection module configuration - auto-detects ARTPEC-8/9"
 }

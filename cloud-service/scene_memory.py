@@ -148,12 +148,12 @@ class SceneMemory:
             return False, "disabled"
 
         # Trigger conditions
-        motion_score = metadata.get('motion_score', 0)
-        detections = metadata.get('detections', [])
+        motion_score = metadata.get('motion_score') or 0
+        detections = metadata.get('detections') or []
         scene_hash = metadata.get('scene_hash')
 
         # High motion trigger
-        if motion_score > settings.motion_threshold:
+        if motion_score and motion_score > settings.motion_threshold:
             return True, f"high_motion_{motion_score:.2f}"
 
         # Vehicle detection trigger

@@ -2,7 +2,7 @@
 Database Layer - PostgreSQL + Redis
 """
 import asyncpg
-import aioredis
+from redis import asyncio as aioredis
 from typing import Optional, Dict, Any, List
 import json
 import logging

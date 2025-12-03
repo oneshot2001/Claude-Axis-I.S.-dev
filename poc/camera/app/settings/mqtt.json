@@ -6,7 +6,7 @@
   "password": "",
   "tls": false,
   "verify": false,
-  "preTopic": "axis-is/camera",
+  "preTopic": "",
   "connect": true,
-  "_comment": "Windows PC Ethernet IP - MQTT broker runs here. Set connect:true to auto-connect on startup."
+  "_comment": "Windows PC on local network"
 }

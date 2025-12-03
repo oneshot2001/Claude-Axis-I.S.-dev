@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AXION POC - Cloud-side MQTT Subscriber
+Axis I.S. POC - Cloud-side MQTT Subscriber
 
 Subscribes to camera metadata streams and displays real-time statistics.
 Validates POC success criteria:
@@ -25,8 +25,8 @@ except ImportError:
     sys.exit(1)
 
 
-class AXIONSubscriber:
-    """Cloud-side MQTT subscriber for AXION camera metadata"""
+class AxisISSubscriber:
+    """Cloud-side MQTT subscriber for Axis I.S. camera metadata."""
 
     def __init__(self, broker="localhost", port=1883, debug=False):
         self.broker = broker
@@ -51,19 +51,19 @@ class AXIONSubscriber:
 
     async def run(self):
         """Main subscriber loop"""
-        print(f"AXION POC Cloud Subscriber v1.0")
+        print(f"Axis I.S. POC Cloud Subscriber v1.0")
         print(f"Connecting to MQTT broker at {self.broker}:{self.port}")
         print("="*60)
 
         try:
             async with aiomqtt.Client(self.broker, self.port) as client:
-                # Subscribe to all AXION topics
-                await client.subscribe("axion/camera/+/metadata")
-                await client.subscribe("axion/camera/+/status")
+                # Subscribe to all Axis I.S. topics
+                await client.subscribe("axis-is/camera/+/metadata")
+                await client.subscribe("axis-is/camera/+/status")
 
-                print("✓ Subscribed to AXION topics")
-                print("  - axion/camera/+/metadata")
-                print("  - axion/camera/+/status")
+                print("✓ Subscribed to Axis I.S. topics")
+                print("  - axis-is/camera/+/metadata")
+                print("  - axis-is/camera/+/status")
                 print("\nWaiting for messages...\n")
 
                 async for message in client.messages:
@@ -101,7 +101,7 @@ class AXIONSubscriber:
 
     def handle_metadata(self, topic, data):
         """Process metadata message from camera"""
-        # Extract camera ID from topic (axion/camera/<camera_id>/metadata)
+        # Extract camera ID from topic (axis-is/camera/<camera_id>/metadata)
         topic_parts = topic.split("/")
         if len(topic_parts) >= 3:
             camera_id = topic_parts[2]
@@ -237,14 +237,14 @@ class AXIONSubscriber:
 
 def main():
     """Main entry point"""
-    parser = argparse.ArgumentParser(description="AXION POC Cloud Subscriber")
+    parser = argparse.ArgumentParser(description="Axis I.S. POC Cloud Subscriber")
     parser.add_argument("--broker", default="localhost", help="MQTT broker address")
     parser.add_argument("--port", type=int, default=1883, help="MQTT broker port")
     parser.add_argument("--debug", action="store_true", help="Enable debug output")
 
     args = parser.parse_args()
 
-    subscriber = AXIONSubscriber(
+    subscriber = AxisISSubscriber(
         broker=args.broker,
         port=args.port,
         debug=args.debug
