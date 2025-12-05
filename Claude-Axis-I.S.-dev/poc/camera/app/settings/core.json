@@ -1,6 +1,6 @@
 {
 	"camera_id": "axis-camera-001",
 	"target_fps": 10,
-	"confidence_threshold": 0.25,
+	"confidence_threshold": 0.08,
 	"description": "Core module configuration for VDO, Larod, DLPU, and MQTT"
 }

@@ -48,6 +48,9 @@ typedef struct {
     char request_reason[256];
 } FramePublisherState;
 
+/* Global state pointer for MQTT callback access */
+static FramePublisherState* g_frame_publisher_state = NULL;
+
 /* Base64 encoding table */
 static const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -198,6 +201,23 @@ void frame_request_callback(const char* topic, const char* payload, void* user_d
 }
 
 /**
+ * Public MQTT message handler for frame requests
+ * This is the callback registered with MQTT_Init()
+ * It routes frame_request messages to the frame_publisher module
+ */
+void frame_publisher_mqtt_callback(const char* topic, const char* payload) {
+    // Check if this is a frame_request message for us
+    if (!topic || !strstr(topic, "frame_request")) {
+        return;
+    }
+
+    // Use global state pointer
+    if (g_frame_publisher_state) {
+        frame_request_callback(topic, payload, g_frame_publisher_state);
+    }
+}
+
+/**
  * Initialize frame publisher module
  */
 static int frame_publisher_init(ModuleContext* ctx, cJSON* config) {
@@ -248,6 +268,10 @@ static int frame_publisher_init(ModuleContext* ctx, cJSON* config) {
         state->jpeg_quality, state->rate_limit_seconds);
 
     ctx->module_state = state;
+
+    // Set global state pointer for MQTT callback access
+    g_frame_publisher_state = state;
+
     return AXIS_IS_MODULE_SUCCESS;
 }
 
@@ -318,7 +342,8 @@ static int frame_publisher_process(ModuleContext* ctx, FrameData* frame) {
 
     int result = MQTT_Publish_JSON(topic, msg, 1, 0);  // QoS 1, no retain
 
-    if (result == 0) {
+    // MQTT_Publish_JSON returns 1 on success, 0 on failure
+    if (result != 0) {
         state->frames_sent++;
         state->last_frame_sent = time(NULL);
         LOG("Frame published: id=%s size=%zu bytes (JPEG) / %zu bytes (Base64)\n",
@@ -340,7 +365,8 @@ static int frame_publisher_process(ModuleContext* ctx, FrameData* frame) {
     cJSON_AddNumberToObject(module_data, "base64_size_bytes", base64_size);
     cJSON_AddItemToObject(frame->metadata->custom_data, "frame_publisher", module_data);
 
-    return result == 0 ? AXIS_IS_MODULE_SUCCESS : AXIS_IS_MODULE_ERROR;
+    // MQTT_Publish_JSON returns 1 on success, 0 on failure
+    return result != 0 ? AXIS_IS_MODULE_SUCCESS : AXIS_IS_MODULE_ERROR;
 }
 
 /**

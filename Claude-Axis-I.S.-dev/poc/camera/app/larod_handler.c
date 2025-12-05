@@ -51,12 +51,20 @@
  *
  * Dequantization formula: float_value = (int8_value - zero_point) * scale
  *
- * Testing different scales:
- * - 0.00390625 (1/256): Too small, no detections
- * - 0.0078125 (1/128): Increased scale for testing
+ * For INT8 quantized YOLO output:
+ * - Confidence values (objectness, class scores): normalized 0-1
+ * - Bounding box values: pixel coordinates 0-640
+ *
+ * INT8 range: -128 to 127 (for signed int8)
+ * For confidence: max ~127 should map to ~1.0, so scale ≈ 1/127 ≈ 0.00787
+ * For bbox: max ~127 should map to ~640, so scale ≈ 640/127 ≈ 5.04
  */
-#define YOLO_OUTPUT_SCALE 0.00390625f   // 1/256 - original working value
-#define YOLO_OUTPUT_ZERO_POINT 0        // Symmetric quantization
+#define YOLO_CONFIDENCE_SCALE 0.0078740157f  // 1/127 - for confidence values
+#define YOLO_BBOX_SCALE 5.0393700787f        // 640/127 - for bbox pixel coordinates
+#define YOLO_OUTPUT_ZERO_POINT 0             // Symmetric quantization
+
+// Legacy scale kept for reference
+#define YOLO_OUTPUT_SCALE 0.00390625f
 
 /**
  * Parse YOLO output tensor (INT8 quantized version)
@@ -159,6 +167,142 @@ static void parse_yolo_output(LarodContext* ctx, float* output_data,
         det->y = detection[1] / (float)YOLO_INPUT_HEIGHT;
         det->width = detection[2] / (float)YOLO_INPUT_WIDTH;
         det->height = detection[3] / (float)YOLO_INPUT_HEIGHT;
+
+        (*num_detections)++;
+    }
+}
+
+/**
+ * Parse YOLO output tensor (FLOAT version - dynamic anchor count)
+ * Handles different model sizes (640x640, 416x416, etc.)
+ */
+static void parse_yolo_output_dynamic(LarodContext* ctx, float* output_data,
+                                      int num_anchors, Detection* detections,
+                                      int* num_detections) {
+    *num_detections = 0;
+
+    for (int i = 0; i < num_anchors && *num_detections < YOLO_MAX_DETECTIONS; i++) {
+        float* detection = &output_data[i * 85];
+        float objectness = detection[4];
+
+        if (objectness < ctx->confidence_threshold) continue;
+
+        // Find class with highest score
+        int best_class = 0;
+        float best_score = detection[5];
+        for (int c = 1; c < YOLO_NUM_CLASSES; c++) {
+            if (detection[5 + c] > best_score) {
+                best_score = detection[5 + c];
+                best_class = c;
+            }
+        }
+
+        // Combined confidence
+        float final_confidence = objectness * best_score;
+        if (final_confidence < ctx->confidence_threshold) continue;
+
+        Detection* det = &detections[*num_detections];
+        det->class_id = best_class;
+        det->confidence = final_confidence;
+
+        // For YOLO output, coordinates are typically:
+        // - Already normalized to 0-1 for some models
+        // - In pixel coordinates for others
+        // Check if values look like pixel coords (> 1.0) or normalized
+        float x_val = detection[0];
+        float y_val = detection[1];
+        float w_val = detection[2];
+        float h_val = detection[3];
+
+        // If any coordinate > 2.0, assume pixel coordinates and normalize
+        if (x_val > 2.0f || y_val > 2.0f || w_val > 2.0f || h_val > 2.0f) {
+            // Determine input size based on anchor count
+            float input_size = (num_anchors == 25200) ? 640.0f : 416.0f;
+            det->x = x_val / input_size;
+            det->y = y_val / input_size;
+            det->width = w_val / input_size;
+            det->height = h_val / input_size;
+        } else {
+            // Already normalized
+            det->x = x_val;
+            det->y = y_val;
+            det->width = w_val;
+            det->height = h_val;
+        }
+
+        // Clamp to valid range
+        if (det->x < 0) det->x = 0; if (det->x > 1) det->x = 1;
+        if (det->y < 0) det->y = 0; if (det->y > 1) det->y = 1;
+        if (det->width < 0) det->width = 0; if (det->width > 1) det->width = 1;
+        if (det->height < 0) det->height = 0; if (det->height > 1) det->height = 1;
+
+        (*num_detections)++;
+    }
+}
+
+/**
+ * Parse YOLO output tensor (INT8 version - dynamic anchor count)
+ * Handles different model sizes with INT8 quantized output
+ *
+ * Uses separate scales for confidence and bbox values:
+ * - Confidence (objectness + class scores): scale to 0-1 range
+ * - Bounding box (x,y,w,h): scale to pixel coordinates, then normalize
+ */
+static void parse_yolo_output_int8_dynamic(LarodContext* ctx, int8_t* output_data,
+                                           int num_anchors, Detection* detections,
+                                           int* num_detections, float conf_scale,
+                                           int zero_point) {
+    *num_detections = 0;
+
+    // Determine input size based on anchor count
+    float input_size = (num_anchors == 25200) ? 640.0f : 416.0f;
+    float bbox_scale = input_size / 127.0f;  // Map int8 range to pixel coords
+
+    for (int i = 0; i < num_anchors && *num_detections < YOLO_MAX_DETECTIONS; i++) {
+        int8_t* detection_int8 = &output_data[i * 85];
+
+        // Dequantize objectness score using confidence scale
+        float objectness = ((float)detection_int8[4] - zero_point) * conf_scale;
+
+        if (objectness < ctx->confidence_threshold) continue;
+
+        // Find class with highest score
+        int best_class = 0;
+        float best_score = ((float)detection_int8[5] - zero_point) * conf_scale;
+        for (int c = 1; c < YOLO_NUM_CLASSES; c++) {
+            float class_score = ((float)detection_int8[5 + c] - zero_point) * conf_scale;
+            if (class_score > best_score) {
+                best_score = class_score;
+                best_class = c;
+            }
+        }
+
+        // Combined confidence
+        float final_confidence = objectness * best_score;
+        if (final_confidence < ctx->confidence_threshold) continue;
+
+        // Dequantize bounding box coordinates using bbox scale
+        // This converts int8 values to pixel coordinates
+        float x_pixels = ((float)detection_int8[0] - zero_point) * bbox_scale;
+        float y_pixels = ((float)detection_int8[1] - zero_point) * bbox_scale;
+        float w_pixels = ((float)detection_int8[2] - zero_point) * bbox_scale;
+        float h_pixels = ((float)detection_int8[3] - zero_point) * bbox_scale;
+
+        Detection* det = &detections[*num_detections];
+        det->class_id = best_class;
+        det->confidence = final_confidence;
+
+        // Normalize to 0-1 range
+        det->x = x_pixels / input_size;
+        det->y = y_pixels / input_size;
+        det->width = w_pixels / input_size;
+        det->height = h_pixels / input_size;
+
+        // Clamp values to valid range
+        if (det->x < 0) det->x = 0; if (det->x > 1) det->x = 1;
+        if (det->y < 0) det->y = 0; if (det->y > 1) det->y = 1;
+        if (det->width < 0) det->width = 0; if (det->width > 1) det->width = 1;
+        if (det->height < 0) det->height = 0; if (det->height > 1) det->height = 1;
 
         (*num_detections)++;
     }
@@ -531,30 +675,74 @@ LarodResult* Larod_Run_Inference(LarodContext* ctx, VdoBuffer* vdo_buffer) {
     }
 
     // Parse YOLO output format
-    // INT8 quantized models from Axis Model Zoo output int8_t values
-    // Expected output size for YOLOv5n 640x640 INT8: 25200 * 85 = 2,142,000 bytes
-    // Float output would be: 25200 * 85 * 4 = 8,568,000 bytes
-    size_t expected_int8_size = 25200 * 85 * sizeof(int8_t);
-    size_t expected_float_size = 25200 * 85 * sizeof(float);
+    // YOLOv5n models can have different input sizes and output formats:
+    //
+    // 640x640 model: 25200 anchors = (80x80 + 40x40 + 20x20) x 3
+    // 416x416 model: 10647 anchors = (52x52 + 26x26 + 13x13) x 3
+    //
+    // Output format depends on quantization:
+    // - INT8 output: 1 byte per value
+    // - FLOAT32 output: 4 bytes per value (most common from Axis Model Zoo)
+    //
+    // Size calculations:
+    // 640x640 INT8:  25200 * 85 * 1 = 2,142,000 bytes
+    // 640x640 FLOAT: 25200 * 85 * 4 = 8,568,000 bytes
+    // 416x416 INT8:  10647 * 85 * 1 =   904,995 bytes
+    // 416x416 FLOAT: 10647 * 85 * 4 = 3,619,980 bytes
 
     // Track if we've logged the parser type (avoid spam)
     static int parser_logged = 0;
 
-    if (output_size == expected_int8_size || output_size < expected_float_size) {
-        // INT8 quantized output - use dequantization
-        if (!parser_logged) {
-            LOG("Larod: Using INT8 output parser (size=%zu)\n", output_size);
-            parser_logged = 1;
-        }
-        parse_yolo_output_int8(ctx, (int8_t*)output_data, result->detections,
-                               &result->num_detections, YOLO_OUTPUT_SCALE, YOLO_OUTPUT_ZERO_POINT);
+    // Determine model size and output format from actual tensor size
+    int num_anchors = 0;
+    int is_float_output = 0;
+
+    // Check for 640x640 model sizes first
+    if (output_size == 25200 * 85 * sizeof(float)) {
+        num_anchors = 25200;
+        is_float_output = 1;
+    } else if (output_size == 25200 * 85 * sizeof(int8_t)) {
+        num_anchors = 25200;
+        is_float_output = 0;
+    }
+    // Check for 416x416 model sizes
+    else if (output_size == 10647 * 85 * sizeof(float)) {
+        num_anchors = 10647;
+        is_float_output = 1;
+    } else if (output_size == 10647 * 85 * sizeof(int8_t)) {
+        num_anchors = 10647;
+        is_float_output = 0;
+    }
+    // Heuristic: if divisible by 85*4, likely float; if divisible by 85 only, likely int8
+    else if (output_size % (85 * sizeof(float)) == 0) {
+        num_anchors = output_size / (85 * sizeof(float));
+        is_float_output = 1;
+    } else if (output_size % 85 == 0) {
+        num_anchors = output_size / 85;
+        is_float_output = 0;
     } else {
-        // Float output (non-quantized model)
-        if (!parser_logged) {
-            LOG("Larod: Using float output parser (size=%zu)\n", output_size);
-            parser_logged = 1;
-        }
-        parse_yolo_output(ctx, (float*)output_data, result->detections, &result->num_detections);
+        LOG_ERR("Unknown output tensor size: %zu bytes\n", output_size);
+        munmap(output_data, output_size);
+        free(result->detections);
+        free(result);
+        return NULL;
+    }
+
+    if (!parser_logged) {
+        LOG("Larod: Output size=%zu, anchors=%d, format=%s\n",
+            output_size, num_anchors, is_float_output ? "FLOAT32" : "INT8");
+        parser_logged = 1;
+    }
+
+    if (is_float_output) {
+        // FLOAT32 output - use float parser with dynamic anchor count
+        parse_yolo_output_dynamic(ctx, (float*)output_data, num_anchors,
+                                  result->detections, &result->num_detections);
+    } else {
+        // INT8 quantized output - use dequantization with confidence scale
+        parse_yolo_output_int8_dynamic(ctx, (int8_t*)output_data, num_anchors,
+                                       result->detections, &result->num_detections,
+                                       YOLO_CONFIDENCE_SCALE, YOLO_OUTPUT_ZERO_POINT);
     }
 
     // Unmap output tensor

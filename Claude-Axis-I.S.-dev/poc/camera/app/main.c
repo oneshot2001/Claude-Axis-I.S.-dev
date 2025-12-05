@@ -34,6 +34,9 @@
 #include "MQTT.h"
 #include "core.h"
 
+/* External function from frame_publisher.c for MQTT callback routing */
+extern void frame_publisher_mqtt_callback(const char* topic, const char* payload);
+
 #define APP_PACKAGE "axis_is_poc"
 #define APP_VERSION "2.0.0"
 
@@ -264,8 +267,9 @@ int main(int argc, char* argv[]) {
     ACAP_HTTP_Node("status", HTTP_ENDPOINT_Status);
     ACAP_HTTP_Node("modules", HTTP_ENDPOINT_Modules);
 
-    // Initialize MQTT
-    if (!MQTT_Init(Main_MQTT_Status, NULL)) {
+    // Initialize MQTT with frame request callback
+    // The callback routes incoming messages to the frame_publisher module
+    if (!MQTT_Init(Main_MQTT_Status, frame_publisher_mqtt_callback)) {
         LOG_ERR("Failed to initialize MQTT\n");
         goto error;
     }
