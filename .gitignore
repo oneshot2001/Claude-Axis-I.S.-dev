@@ -8,6 +8,8 @@
 *.eap
 *.o
 output_tmp/
+*.zip
+tmp*
 
 # Docker
 *.tar
@@ -15,6 +17,8 @@ output_tmp/
 # IDE
 .vscode/
 .idea/
+.claude-flow/
+.swarm/
 *.swp
 *.swo
 
