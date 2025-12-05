@@ -27,7 +27,7 @@ class Settings(BaseSettings):
 
     # Claude API Settings
     anthropic_api_key: Optional[str] = None  # Required if ai_provider="claude"
-    claude_model: str = "claude-3-5-sonnet-20241022"  # or "claude-3-5-haiku-20241022"
+    claude_model: str = "claude-opus-4-5-20251101"  # or "claude-sonnet-4-20250514"
     claude_max_tokens: int = 500
     claude_timeout: int = 30
 
