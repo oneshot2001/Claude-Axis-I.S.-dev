@@ -113,8 +113,8 @@ COPY --from=builder /opt/app/*.eap /
 
 ```bash
 # build.sh orchestrates Docker build
-docker build --tag axion-poc .
-docker create axion-poc
+docker build --tag axis-is-poc .
+docker create axis-is-poc
 docker cp container:/ build/
 docker rm container
 ```

@@ -258,12 +258,12 @@ typedef struct {
 ```c
 int core_discover_modules(CoreContext* ctx) {
     // Linker provides these symbols for .axis_is_modules section
-    extern ModuleInterface* __start_axion_modules;
-    extern ModuleInterface* __stop_axion_modules;
+    extern ModuleInterface* __start_axis-is_modules;
+    extern ModuleInterface* __stop_axis-is_modules;
 
     // Count modules
-    ModuleInterface** start = &__start_axion_modules;
-    ModuleInterface** stop = &__stop_axion_modules;
+    ModuleInterface** start = &__start_axis-is_modules;
+    ModuleInterface** stop = &__stop_axis-is_modules;
     int count = (int)(stop - start);
 
     // Sort modules by priority (lower = earlier execution)
@@ -1052,14 +1052,14 @@ static int anomaly_process(ModuleContext* ctx, FrameData* frame) {
 
 ```bash
 # Install module from marketplace
-axion-module install <module-name>
+axis-is-module install <module-name>
 
 # List installed modules
-axion-module list
+axis-is-module list
 
 # Enable/disable modules
-axion-module enable lpr
-axion-module disable ocr
+axis-is-module enable lpr
+axis-is-module disable ocr
 ```
 
 **Module Package Format:**
@@ -1250,7 +1250,7 @@ nm axis_is_poc | grep -i module_name
 # Should show MODULE_REGISTER symbol
 
 # Check linker sections
-objdump -h axis_is_poc | grep axion_modules
+objdump -h axis_is_poc | grep axis-is_modules
 # Should show .axis_is_modules section
 ```
 

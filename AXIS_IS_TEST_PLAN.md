@@ -1218,7 +1218,7 @@ The Axis I.S. platform is a distributed edge computing system combining real-tim
            --show-leak-kinds=all \
            --track-origins=yes \
            --log-file=valgrind-72h.log \
-           ./axion_acap
+           ./axis-is_acap
 
   # Run for 72 hours
   # Analyze valgrind-72h.log
@@ -1235,7 +1235,7 @@ The Axis I.S. platform is a distributed edge computing system combining real-tim
   ```bash
   # Sample memory every 5 minutes
   while true; do
-      smem -c "pid name pss" | grep axion >> mem_log.txt
+      smem -c "pid name pss" | grep axis-is >> mem_log.txt
       sleep 300
   done
 
@@ -1601,7 +1601,7 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: axion
+      POSTGRES_DB: axis-is
 
   mock_camera:
     build: ./tests/mock_camera
@@ -1692,14 +1692,14 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run camera-side unit tests
         run: |
-          docker build -t axion-test -f Dockerfile.test .
-          docker run axion-test make test
+          docker build -t axis-is-test -f Dockerfile.test .
+          docker run axis-is-test make test
 
       - name: Run cloud-side unit tests
         run: |
           cd cloud
           pip install -r requirements-test.txt
-          pytest --cov=axion tests/
+          pytest --cov=axis-is tests/
 
   integration-tests:
     needs: unit-tests
@@ -1893,7 +1893,7 @@ def send_test_report(results):
     Performance Regressions: {results['regressions']}
     Memory Leaks Detected: {results['memory_leaks']}
 
-    Full report: https://jenkins.example.com/job/axion-tests/
+    Full report: https://jenkins.example.com/job/axis-is-tests/
     """
     send_email(to="team@example.com", subject="Axis I.S. Test Report", body=summary)
 ```

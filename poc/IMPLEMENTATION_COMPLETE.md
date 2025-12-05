@@ -171,7 +171,7 @@ Expected: MQTT messages streaming from camera
 1. **Update camera ID** in `camera/app/settings/settings.json`:
    ```json
    {
-     "axion": {
+     "axis-is": {
        "camera_id": "axis-camera-001"  # <-- Change this
      }
    }
@@ -196,7 +196,7 @@ Expected: MQTT messages streaming from camera
 Monitor these endpoints:
 - `http://<camera-ip>/local/axis_is_poc/status` - Application health
 - `http://<camera-ip>/local/axis_is_poc/metadata` - Latest frame data
-- Camera logs: `ssh root@<camera-ip> "tail -f /var/log/messages | grep axion"`
+- Camera logs: `ssh root@<camera-ip> "tail -f /var/log/messages | grep axis-is"`
 
 ---
 

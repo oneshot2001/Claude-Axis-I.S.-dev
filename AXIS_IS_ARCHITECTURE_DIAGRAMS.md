@@ -461,7 +461,7 @@ graph TB
         MOSQUITTO[mosquitto:2.0<br/>1GB RAM<br/>Port 1883/8883]
         REDIS_C[redis:7-alpine<br/>2GB RAM<br/>Port 6379]
         POSTGRES_C[postgres:16<br/>8GB RAM<br/>Port 5432]
-        Axis I.S._COORD[axion-coordinator<br/>4GB RAM<br/>Python 3.11]
+        Axis I.S._COORD[axis-is-coordinator<br/>4GB RAM<br/>Python 3.11]
         GRAFANA[grafana/grafana<br/>1GB RAM<br/>Port 3000]
     end
 
@@ -527,8 +527,8 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_DB: axion
-      POSTGRES_USER: axion
+      POSTGRES_DB: axis-is
+      POSTGRES_USER: axis-is
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     ports:
       - "5432:5432"
@@ -542,7 +542,7 @@ services:
     restart: unless-stopped
 
   coordinator:
-    build: ./axion-coordinator
+    build: ./axis-is-coordinator
     environment:
       - MQTT_BROKER=mosquitto
       - REDIS_HOST=redis

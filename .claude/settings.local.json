@@ -26,7 +26,9 @@
       "Bash(git init:*)",
       "Bash(git branch:*)",
       "Bash(git remote add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(find:*)",
+      "Bash(unzip:*)"
     ],
     "deny": [],
     "ask": []

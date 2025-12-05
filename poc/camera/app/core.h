@@ -12,6 +12,7 @@
 #include "larod_handler.h"
 #include "dlpu_basic.h"
 #include "MQTT.h"
+#include <pthread.h>
 
 /**
  * Core context structure
@@ -41,9 +42,18 @@ struct CoreContext {
     int current_frame_id;
     int64_t start_time_us;
 
+    // Last metadata (thread-safe)
+    pthread_mutex_t metadata_mutex;
+    cJSON* last_metadata;
+
     // Configuration
     cJSON* config;
 };
+
+/**
+ * Get latest metadata (caller must free)
+ */
+cJSON* core_get_latest_metadata(CoreContext* ctx);
 
 /**
  * Initialize the core module

@@ -158,8 +158,8 @@ AXIS OS 12 removes Docker container support. All applications must be native bin
 **Before (Docker-based):**
 ```bash
 # Multi-stage Docker build
-docker build --tag axion-poc .
-docker create axion-poc
+docker build --tag axis-is-poc .
+docker create axis-is-poc
 docker cp container:/opt/app/*.eap ./
 docker rm container
 ```

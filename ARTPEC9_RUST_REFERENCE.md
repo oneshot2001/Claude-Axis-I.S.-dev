@@ -209,7 +209,7 @@ use reqwest::Client;
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize ACAP SDK
-    let acap = Acap::new("axion")?;
+    let acap = Acap::new("axis-is")?;
     
     // VDO stream setup
     let stream = acap.vdo()

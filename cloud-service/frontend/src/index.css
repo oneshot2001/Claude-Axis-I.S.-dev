@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --axis-black: #000000;
+  --axis-yellow: #FFD200;
+  --axis-red: #B22234;
+  --axis-white: #FFFFFF;
+  
+  --header-height: 4rem;
+}
+
+body {
+  background-color: #f3f4f6;
+  color: var(--axis-black);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+

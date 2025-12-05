@@ -26,6 +26,26 @@
           "access": "viewer",
           "name": "metadata",
           "type": "fastCgi"
+        },
+        {
+          "access": "viewer",
+          "name": "ui",
+          "type": "fastCgi"
+        },
+        {
+          "access": "viewer",
+          "name": "detections",
+          "type": "fastCgi"
+        },
+        {
+          "access": "viewer",
+          "name": "frame",
+          "type": "fastCgi"
+        },
+        {
+          "access": "viewer",
+          "name": "config",
+          "type": "fastCgi"
         }
       ],
       "settingPage": "mqtt.html"

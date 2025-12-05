@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axis I.S. Edge Dashboard</title>
+    <link rel="stylesheet" href="css/axis-theme.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <h1>Axis I.S. POC</h1>
+            <span id="app-version" style="font-size: 0.8rem; opacity: 0.8;">v2.0.0</span>
+        </div>
+        <div class="header-right">
+            <span id="camera-id" style="margin-right: 1rem; font-weight: 500;">Loading...</span>
+            <span id="status-badge" class="status-badge offline">Offline</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Main Column: Live View -->
+        <div class="main-column">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Live Inference</h2>
+                    <div class="card-actions">
+                        <!-- Future: Camera controls -->
+                    </div>
+                </div>
+                <div class="live-view-container">
+                    <!-- Placeholder for video stream (ACAP usually uses separate VAPIX stream) -->
+                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #333; display: flex; align-items: center; justify-content: center; color: #666;">
+                        <span>Video Stream Placeholder</span>
+                    </div>
+                    <!-- Canvas overlay for metadata -->
+                    <canvas id="detectionCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Performance Metrics -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">System Performance</h2>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-label">Processing Rate</span>
+                        <span class="metric-value"><span id="metric-fps">0.0</span> FPS</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Target Rate</span>
+                        <span class="metric-value"><span id="metric-target-fps">0</span> FPS</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Total Frames</span>
+                        <span class="metric-value" id="metric-frames">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Uptime</span>
+                        <span class="metric-value" id="metric-uptime">0h 0m</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar: Modules & Config -->
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Active Modules</h2>
+                </div>
+                <ul class="module-list" id="module-list">
+                    <!-- Populated by JS -->
+                    <li class="module-item" style="justify-content: center; color: #999;">
+                        Loading modules...
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Quick Actions</h2>
+                </div>
+                <div style="display: grid; gap: 0.5rem;">
+                    <button class="btn btn-primary" onclick="alert('Coming soon')">Restart Service</button>
+                    <button class="btn" style="border: 1px solid #ccc;" onclick="alert('Coming soon')">Download Logs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/status.js"></script>
+    <script src="js/detections.js"></script>
+</body>
+</html>
+

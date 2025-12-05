@@ -473,6 +473,18 @@ void ACAP_HTTP_Process() {
         }
     }
 
+    // If no exact match, try prefix match for paths ending in /
+    if (!matching_callback) {
+        for (int i = 0; i < http_node_count; i++) {
+            size_t len = strlen(http_nodes[i].path);
+            if (len > 0 && http_nodes[i].path[len-1] == '/' && 
+                strncmp(http_nodes[i].path, pathOnly, len) == 0) {
+                matching_callback = http_nodes[i].callback;
+                break;
+            }
+        }
+    }
+
     if (matching_callback) {
         matching_callback(&request, &requestData);
     } else {
@@ -693,6 +705,56 @@ int ACAP_HTTP_Respond_Text(ACAP_HTTP_Response response, const char* message) {
 
     return ACAP_HTTP_Header_TEXT(response) &&
            ACAP_HTTP_Respond_String(response, "%s", message);
+}
+
+static const char* get_mime_type(const char* filename) {
+    const char* dot = strrchr(filename, '.');
+    if (!dot) return "application/octet-stream";
+    if (strcmp(dot, ".html") == 0) return "text/html";
+    if (strcmp(dot, ".css") == 0) return "text/css";
+    if (strcmp(dot, ".js") == 0) return "application/javascript";
+    if (strcmp(dot, ".json") == 0) return "application/json";
+    if (strcmp(dot, ".png") == 0) return "image/png";
+    if (strcmp(dot, ".jpg") == 0) return "image/jpeg";
+    if (strcmp(dot, ".jpeg") == 0) return "image/jpeg";
+    if (strcmp(dot, ".svg") == 0) return "image/svg+xml";
+    return "application/octet-stream";
+}
+
+int ACAP_HTTP_Serve_Static(ACAP_HTTP_Response response, const char* filepath) {
+    if (!response || !filepath) return 0;
+    
+    FILE* f = ACAP_FILE_Open(filepath, "rb"); 
+    if (!f) {
+        return ACAP_HTTP_Respond_Error(response, 404, "File Not Found");
+    }
+
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    char* buffer = malloc(fsize);
+    if (!buffer) {
+        fclose(f);
+        return ACAP_HTTP_Respond_Error(response, 500, "Memory Error");
+    }
+    if (fread(buffer, 1, fsize, f) != (size_t)fsize) {
+        free(buffer);
+        fclose(f);
+        return ACAP_HTTP_Respond_Error(response, 500, "Read Error");
+    }
+    fclose(f);
+
+    const char* mime = get_mime_type(filepath);
+    ACAP_HTTP_Respond_String(response, 
+        "Content-Type: %s\r\n"
+        "Content-Length: %ld\r\n"
+        "Cache-Control: max-age=3600\r\n\r\n", 
+        mime, fsize);
+    
+    int ret = FCGX_PutStr(buffer, fsize, response->out) == fsize;
+    free(buffer);
+    return ret;
 }
 
 /*------------------------------------------------------------------

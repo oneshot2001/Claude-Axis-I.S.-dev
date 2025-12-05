@@ -117,6 +117,9 @@ int core_init(CoreContext** ctx, const char* config_file) {
     core->current_frame_id = 0;
     core->start_time_us = get_timestamp_us();
 
+    pthread_mutex_init(&core->metadata_mutex, NULL);
+    core->last_metadata = NULL;
+
     // Set global context pointer for module access to shared resources
     g_core_context = core;
 
@@ -391,6 +394,11 @@ void core_cleanup(CoreContext* ctx) {
         cJSON_Delete(ctx->config);
     }
 
+    if (ctx->last_metadata) {
+        cJSON_Delete(ctx->last_metadata);
+    }
+    pthread_mutex_destroy(&ctx->metadata_mutex);
+
     // Clear global context pointer
     g_core_context = NULL;
 
@@ -464,7 +472,27 @@ void core_api_publish_metadata(CoreContext* ctx, MetadataFrame* meta) {
 
     // Publish
     MQTT_Publish_JSON(topic, json, 0, 0);
+
+    // Update last metadata
+    pthread_mutex_lock(&ctx->metadata_mutex);
+    if (ctx->last_metadata) {
+        cJSON_Delete(ctx->last_metadata);
+    }
+    ctx->last_metadata = cJSON_Duplicate(json, 1);
+    pthread_mutex_unlock(&ctx->metadata_mutex);
+
     cJSON_Delete(json);
+}
+
+cJSON* core_get_latest_metadata(CoreContext* ctx) {
+    if (!ctx) return NULL;
+    cJSON* meta = NULL;
+    pthread_mutex_lock(&ctx->metadata_mutex);
+    if (ctx->last_metadata) {
+        meta = cJSON_Duplicate(ctx->last_metadata, 1);
+    }
+    pthread_mutex_unlock(&ctx->metadata_mutex);
+    return meta;
 }
 
 void core_api_log(int level, const char* module, const char* format, ...) {

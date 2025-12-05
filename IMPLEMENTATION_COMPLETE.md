@@ -141,10 +141,10 @@ MODULE_REGISTER(lpr_module, "lpr", "1.0.0", 20,
 Core discovers modules automatically at runtime:
 
 ```c
-extern ModuleInterface* __start_axion_modules;
-extern ModuleInterface* __stop_axion_modules;
+extern ModuleInterface* __start_axis-is_modules;
+extern ModuleInterface* __stop_axis-is_modules;
 
-int count = (int)(__stop_axion_modules - __start_axion_modules);
+int count = (int)(__stop_axis-is_modules - __start_axis-is_modules);
 // Modules sorted by priority and initialized
 ```
 

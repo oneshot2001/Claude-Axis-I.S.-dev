@@ -147,7 +147,7 @@ poc/
 
 ```json
 {
-  "axion": {
+  "axis-is": {
     "camera_id": "axis-camera-001",
     "target_fps": 10,
     "confidence_threshold": 0.25,
@@ -162,7 +162,7 @@ poc/
 {
   "broker": "192.168.1.50",
   "port": 1883,
-  "clientId": "axion-camera-001"
+  "clientId": "axis-is-camera-001"
 }
 ```
 

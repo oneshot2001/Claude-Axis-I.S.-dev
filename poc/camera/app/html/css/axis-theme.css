@@ -1,0 +1,193 @@
+:root {
+  /* Axis Brand */
+  --axis-black: #000000;
+  --axis-yellow: #FFD200;
+  --axis-red: #B22234;
+  --axis-white: #FFFFFF;
+  --axis-gray-100: #F5F5F5;
+  --axis-gray-200: #E5E5E5;
+  --axis-gray-300: #D4D4D4;
+  --axis-gray-800: #262626;
+
+  /* Semantic */
+  --color-primary: var(--axis-yellow);
+  --color-danger: var(--axis-red);
+  --color-success: #22C55E;
+  --color-bg: var(--axis-gray-100);
+  --color-text: var(--axis-black);
+  --color-text-inverse: var(--axis-white);
+
+  /* Status */
+  --status-online: #22C55E;
+  --status-offline: #EF4444;
+  --status-degraded: #F59E0B;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Header: Black background, white text, yellow accents */
+.app-header {
+  background: var(--axis-black);
+  color: var(--axis-white);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 4px solid var(--axis-yellow);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.app-header .status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--axis-gray-800);
+}
+
+.status-badge.online {
+  color: var(--status-online);
+  border: 1px solid var(--status-online);
+}
+
+.status-badge.offline {
+  color: var(--status-offline);
+  border: 1px solid var(--status-offline);
+}
+
+/* Main Layout */
+.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+/* Cards: White background, subtle border */
+.card {
+  background: var(--axis-white);
+  border: 1px solid var(--axis-gray-200);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--axis-gray-200);
+}
+
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Live View */
+.live-view-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#detectionCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Module List */
+.module-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.module-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--axis-gray-100);
+}
+
+.module-item:last-child {
+  border-bottom: none;
+}
+
+.module-name {
+  font-weight: 500;
+}
+
+.module-meta {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  background: var(--axis-yellow);
+  color: var(--axis-black);
+}
+
+.btn-primary:hover {
+  background: #E6BD00;
+}
+

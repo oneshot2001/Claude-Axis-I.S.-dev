@@ -12,6 +12,7 @@ from scene_memory import scene_memory
 from ai_factory import get_ai_agent
 from database import db, redis
 from config import settings
+from ws_manager import manager
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +133,15 @@ class MQTTHandler:
             # Store in database
             event_id = await db.store_event(camera_id, metadata)
 
+            # Broadcast event
+            await manager.broadcast({
+                "type": "metadata",
+                "payload": {
+                    "camera_id": camera_id,
+                    "metadata": metadata
+                }
+            })
+
             # Check if we should request a frame for analysis
             should_request, reason = await scene_memory.should_request_frame(camera_id, metadata)
 
@@ -202,6 +212,15 @@ class MQTTHandler:
             # Update camera state in Redis
             await redis.set_camera_state(camera_id, status, ttl=120)
 
+            # Broadcast status update
+            await manager.broadcast({
+                "type": "camera_status",
+                "payload": {
+                    "camera_id": camera_id,
+                    "status": status
+                }
+            })
+
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in status: {str(e)}")
         except Exception as e:
@@ -229,6 +248,15 @@ class MQTTHandler:
 
             # Store alert in database
             # TODO: Implement alert notification system
+            
+            # Broadcast alert
+            await manager.broadcast({
+                "type": "alert",
+                "payload": {
+                    "camera_id": camera_id,
+                    "alert": alert
+                }
+            })
 
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in alert: {str(e)}")

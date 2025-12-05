@@ -834,12 +834,12 @@ Redis provides real-time state management for Axis I.S. with sub-millisecond acc
 Format: {namespace}:{entity_type}:{id}:{attribute}
 
 Examples:
-  axion:camera:CAM001:state
-  axion:dlpu:scheduler:lock
-  axion:bandwidth:CAM001:allocation
-  axion:scene:CAM001:memory
-  axion:queue:mqtt:failed
-  axion:ratelimit:claude:counter
+  axis-is:camera:CAM001:state
+  axis-is:dlpu:scheduler:lock
+  axis-is:bandwidth:CAM001:allocation
+  axis-is:scene:CAM001:memory
+  axis-is:queue:mqtt:failed
+  axis-is:ratelimit:claude:counter
 ```
 
 ---
@@ -851,11 +851,11 @@ Examples:
 ```redis
 # ============================================================================
 # CAMERA STATE - Hash structure per camera
-# Key: axion:camera:{camera_id}:state
+# Key: axis-is:camera:{camera_id}:state
 # TTL: None (persistent until camera disconnects)
 # ============================================================================
 
-HSET axion:camera:CAM001:state
+HSET axis-is:camera:CAM001:state
   status "online"
   fps_current "9.8"
   fps_target "10.0"
@@ -872,53 +872,53 @@ HSET axion:camera:CAM001:state
   uptime_seconds "86423"
 
 # Retrieve current FPS
-HGET axion:camera:CAM001:state fps_current
+HGET axis-is:camera:CAM001:state fps_current
 # Returns: "9.8"
 
 # Get all camera state
-HGETALL axion:camera:CAM001:state
+HGETALL axis-is:camera:CAM001:state
 
 # Update specific field (atomic)
-HSET axion:camera:CAM001:state fps_current "10.1"
+HSET axis-is:camera:CAM001:state fps_current "10.1"
 
 # Increment frame counter (atomic)
-HINCRBY axion:camera:CAM001:state frames_processed 1
+HINCRBY axis-is:camera:CAM001:state frames_processed 1
 
 # ============================================================================
 # CAMERA METRICS - Time-series data (last 60 seconds)
-# Key: axion:camera:{camera_id}:metrics
+# Key: axis-is:camera:{camera_id}:metrics
 # Type: Sorted Set (score = timestamp)
 # TTL: 300 seconds
 # ============================================================================
 
 # Add metric sample
-ZADD axion:camera:CAM001:metrics 1732377623 '{"fps":9.8,"motion":0.45,"objects":3}'
+ZADD axis-is:camera:CAM001:metrics 1732377623 '{"fps":9.8,"motion":0.45,"objects":3}'
 
 # Get last 60 seconds of metrics
-ZRANGEBYSCORE axion:camera:CAM001:metrics (NOW-60) +inf
+ZRANGEBYSCORE axis-is:camera:CAM001:metrics (NOW-60) +inf
 
 # Remove metrics older than 5 minutes
-ZREMRANGEBYSCORE axion:camera:CAM001:metrics -inf (NOW-300)
+ZREMRANGEBYSCORE axis-is:camera:CAM001:metrics -inf (NOW-300)
 
 # Set TTL on metrics key
-EXPIRE axion:camera:CAM001:metrics 300
+EXPIRE axis-is:camera:CAM001:metrics 300
 
 # ============================================================================
 # CAMERA LIST - Set of all active cameras
-# Key: axion:cameras:active
+# Key: axis-is:cameras:active
 # Type: Set
 # ============================================================================
 
-SADD axion:cameras:active "CAM001" "CAM002" "CAM003"
+SADD axis-is:cameras:active "CAM001" "CAM002" "CAM003"
 
 # Get all active cameras
-SMEMBERS axion:cameras:active
+SMEMBERS axis-is:cameras:active
 
 # Check if camera is active
-SISMEMBER axion:cameras:active "CAM001"
+SISMEMBER axis-is:cameras:active "CAM001"
 
 # Remove offline camera
-SREM axion:cameras:active "CAM005"
+SREM axis-is:cameras:active "CAM005"
 ```
 
 ---
@@ -930,29 +930,29 @@ SREM axion:cameras:active "CAM005"
 ```redis
 # ============================================================================
 # DLPU SCHEDULER LOCK - Distributed lock for DLPU access
-# Key: axion:dlpu:scheduler:lock
+# Key: axis-is:dlpu:scheduler:lock
 # Type: String
 # TTL: 100ms (auto-release if holder crashes)
 # ============================================================================
 
 # Acquire lock (SET with NX and PX)
-SET axion:dlpu:scheduler:lock "CAM001:frame_12450" NX PX 100
+SET axis-is:dlpu:scheduler:lock "CAM001:frame_12450" NX PX 100
 # Returns: OK (if acquired), nil (if already locked)
 
 # Release lock (DEL with check)
-DEL axion:dlpu:scheduler:lock
+DEL axis-is:dlpu:scheduler:lock
 
 # Check lock holder
-GET axion:dlpu:scheduler:lock
+GET axis-is:dlpu:scheduler:lock
 # Returns: "CAM001:frame_12450"
 
 # ============================================================================
 # DLPU TIME SLOTS - Hash map of camera -> next available slot
-# Key: axion:dlpu:timeslots
+# Key: axis-is:dlpu:timeslots
 # Type: Hash
 # ============================================================================
 
-HSET axion:dlpu:timeslots
+HSET axis-is:dlpu:timeslots
   CAM001 "1732377623.000"
   CAM002 "1732377623.050"
   CAM003 "1732377623.100"
@@ -960,38 +960,38 @@ HSET axion:dlpu:timeslots
   CAM005 "1732377623.200"
 
 # Get next slot for camera
-HGET axion:dlpu:timeslots CAM001
+HGET axis-is:dlpu:timeslots CAM001
 # Returns: "1732377623.000"
 
 # Update slot after inference (add 50ms)
-HINCRBYFLOAT axion:dlpu:timeslots CAM001 0.050
+HINCRBYFLOAT axis-is:dlpu:timeslots CAM001 0.050
 
 # ============================================================================
 # DLPU QUEUE - Sorted set of pending inference requests
-# Key: axion:dlpu:queue
+# Key: axis-is:dlpu:queue
 # Type: Sorted Set (score = priority timestamp)
 # ============================================================================
 
 # Add camera to queue (score = target_time * 1000000 + priority)
-ZADD axion:dlpu:queue 1732377623000005 "CAM001:frame_12450"
+ZADD axis-is:dlpu:queue 1732377623000005 "CAM001:frame_12450"
 
 # Get next camera to process
-ZPOPMIN axion:dlpu:queue 1
+ZPOPMIN axis-is:dlpu:queue 1
 # Returns: ["CAM001:frame_12450", 1732377623000005]
 
 # Check queue depth
-ZCARD axion:dlpu:queue
+ZCARD axis-is:dlpu:queue
 
 # Remove stale requests (older than 1 second)
-ZREMRANGEBYSCORE axion:dlpu:queue -inf (NOW*1000000-1000000)
+ZREMRANGEBYSCORE axis-is:dlpu:queue -inf (NOW*1000000-1000000)
 
 # ============================================================================
 # DLPU STATS - Hash of inference statistics
-# Key: axion:dlpu:stats
+# Key: axis-is:dlpu:stats
 # Type: Hash
 # ============================================================================
 
-HSET axion:dlpu:stats
+HSET axis-is:dlpu:stats
   total_inferences "125430"
   avg_inference_ms "48.3"
   last_inference_ms "45"
@@ -999,8 +999,8 @@ HSET axion:dlpu:stats
   contentions_count "234"
   last_contention_at "1732377500"
 
-HINCRBY axion:dlpu:stats total_inferences 1
-HSET axion:dlpu:stats last_inference_ms "47"
+HINCRBY axis-is:dlpu:stats total_inferences 1
+HSET axis-is:dlpu:stats last_inference_ms "47"
 ```
 
 ---
@@ -1012,12 +1012,12 @@ HSET axion:dlpu:stats last_inference_ms "47"
 ```redis
 # ============================================================================
 # BANDWIDTH ALLOCATION - Hash per camera
-# Key: axion:bandwidth:{camera_id}:allocation
+# Key: axis-is:bandwidth:{camera_id}:allocation
 # Type: Hash
 # TTL: None (updated by bandwidth controller)
 # ============================================================================
 
-HSET axion:bandwidth:CAM001:allocation
+HSET axis-is:bandwidth:CAM001:allocation
   quality_level "medium"
   target_fps "10"
   max_bitrate_kbps "2500"
@@ -1028,10 +1028,10 @@ HSET axion:bandwidth:CAM001:allocation
   adjustment_reason "high_motion_detected"
 
 # Get current quality level
-HGET axion:bandwidth:CAM001:allocation quality_level
+HGET axis-is:bandwidth:CAM001:allocation quality_level
 
 # Update allocation (atomic)
-HMSET axion:bandwidth:CAM001:allocation \
+HMSET axis-is:bandwidth:CAM001:allocation \
   quality_level "high" \
   target_fps "15" \
   max_bitrate_kbps "4000" \
@@ -1039,36 +1039,36 @@ HMSET axion:bandwidth:CAM001:allocation \
 
 # ============================================================================
 # GLOBAL BANDWIDTH BUDGET - String (total available bandwidth)
-# Key: axion:bandwidth:global:budget
+# Key: axis-is:bandwidth:global:budget
 # Type: String (float)
 # ============================================================================
 
-SET axion:bandwidth:global:budget "25.0"
+SET axis-is:bandwidth:global:budget "25.0"
 # 25 Mbps total
 
 # Get remaining bandwidth
-GET axion:bandwidth:global:budget
+GET axis-is:bandwidth:global:budget
 
 # Atomic decrement (reserve bandwidth)
-INCRBYFLOAT axion:bandwidth:global:budget -2.5
+INCRBYFLOAT axis-is:bandwidth:global:budget -2.5
 # Reserves 2.5 Mbps
 
 # ============================================================================
 # BANDWIDTH USAGE TRACKING - Sorted set of cameras by usage
-# Key: axion:bandwidth:usage:ranking
+# Key: axis-is:bandwidth:usage:ranking
 # Type: Sorted Set (score = current bitrate)
 # ============================================================================
 
-ZADD axion:bandwidth:usage:ranking \
+ZADD axis-is:bandwidth:usage:ranking \
   2340 "CAM001" \
   1850 "CAM002" \
   3100 "CAM003"
 
 # Get top bandwidth consumers
-ZREVRANGE axion:bandwidth:usage:ranking 0 4 WITHSCORES
+ZREVRANGE axis-is:bandwidth:usage:ranking 0 4 WITHSCORES
 
 # Get camera rank
-ZREVRANK axion:bandwidth:usage:ranking "CAM001"
+ZREVRANK axis-is:bandwidth:usage:ranking "CAM001"
 ```
 
 ---
@@ -1080,50 +1080,50 @@ ZREVRANK axion:bandwidth:usage:ranking "CAM001"
 ```redis
 # ============================================================================
 # SCENE MEMORY - List of recent frames per camera
-# Key: axion:scene:{camera_id}:memory
+# Key: axis-is:scene:{camera_id}:memory
 # Type: List (LPUSH/RPUSH for queue behavior)
 # TTL: 3600 seconds (1 hour)
 # ============================================================================
 
 # Add new frame to scene memory (keep last 30 frames)
-LPUSH axion:scene:CAM001:memory '{"frame":12450,"ts":1732377623,"hash":"a3f5c8","objects":["person","car"],"motion":0.45}'
-LTRIM axion:scene:CAM001:memory 0 29
+LPUSH axis-is:scene:CAM001:memory '{"frame":12450,"ts":1732377623,"hash":"a3f5c8","objects":["person","car"],"motion":0.45}'
+LTRIM axis-is:scene:CAM001:memory 0 29
 
 # Get last N frames for context
-LRANGE axion:scene:CAM001:memory 0 9
+LRANGE axis-is:scene:CAM001:memory 0 9
 # Returns last 10 frames
 
 # Get oldest frame in memory
-LINDEX axion:scene:CAM001:memory -1
+LINDEX axis-is:scene:CAM001:memory -1
 
 # Set TTL (auto-expire if no activity)
-EXPIRE axion:scene:CAM001:memory 3600
+EXPIRE axis-is:scene:CAM001:memory 3600
 
 # ============================================================================
 # SCENE HASH INDEX - Set of unique scene hashes (deduplication)
-# Key: axion:scene:{camera_id}:hashes
+# Key: axis-is:scene:{camera_id}:hashes
 # Type: Sorted Set (score = timestamp)
 # TTL: 3600 seconds
 # ============================================================================
 
 # Add scene hash
-ZADD axion:scene:CAM001:hashes 1732377623 "a3f5c8"
+ZADD axis-is:scene:CAM001:hashes 1732377623 "a3f5c8"
 
 # Check if scene already seen (last 5 minutes)
-ZRANGEBYSCORE axion:scene:CAM001:hashes (NOW-300) +inf
+ZRANGEBYSCORE axis-is:scene:CAM001:hashes (NOW-300) +inf
 # If contains "a3f5c8", scene is duplicate
 
 # Remove old hashes
-ZREMRANGEBYSCORE axion:scene:CAM001:hashes -inf (NOW-3600)
+ZREMRANGEBYSCORE axis-is:scene:CAM001:hashes -inf (NOW-3600)
 
 # ============================================================================
 # CLAUDE CONTEXT CACHE - Hash of prepared context per camera
-# Key: axion:claude:{camera_id}:context
+# Key: axis-is:claude:{camera_id}:context
 # Type: Hash
 # TTL: 600 seconds (10 minutes)
 # ============================================================================
 
-HSET axion:claude:CAM001:context
+HSET axis-is:claude:CAM001:context
   last_description "Empty parking lot, 2 cars parked, sunny weather"
   last_objects '["car","car","tree","building"]'
   last_analysis_at "1732377600"
@@ -1131,9 +1131,9 @@ HSET axion:claude:CAM001:context
   alert_active "false"
   context_version "v3"
 
-GET axion:claude:CAM001:context last_description
+GET axis-is:claude:CAM001:context last_description
 
-EXPIRE axion:claude:CAM001:context 600
+EXPIRE axis-is:claude:CAM001:context 600
 ```
 
 ---
@@ -1145,52 +1145,52 @@ EXPIRE axion:claude:CAM001:context 600
 ```redis
 # ============================================================================
 # FAILED MQTT MESSAGES - List queue
-# Key: axion:queue:mqtt:failed
+# Key: axis-is:queue:mqtt:failed
 # Type: List
 # ============================================================================
 
 # Add failed message
-LPUSH axion:queue:mqtt:failed '{"topic":"axis-is/CAM001/event","payload":"...","attempts":1,"last_error":"connection_timeout","queued_at":1732377623}'
+LPUSH axis-is:queue:mqtt:failed '{"topic":"axis-is/CAM001/event","payload":"...","attempts":1,"last_error":"connection_timeout","queued_at":1732377623}'
 
 # Get next message to retry
-RPOP axion:queue:mqtt:failed
+RPOP axis-is:queue:mqtt:failed
 # Returns: oldest failed message
 
 # Get queue depth
-LLEN axion:queue:mqtt:failed
+LLEN axis-is:queue:mqtt:failed
 
 # Peek at next message (without removing)
-LRANGE axion:queue:mqtt:failed -1 -1
+LRANGE axis-is:queue:mqtt:failed -1 -1
 
 # ============================================================================
 # RETRY SCHEDULE - Sorted set (score = retry timestamp)
-# Key: axion:queue:mqtt:retry
+# Key: axis-is:queue:mqtt:retry
 # Type: Sorted Set
 # ============================================================================
 
 # Schedule retry (exponential backoff)
-ZADD axion:queue:mqtt:retry 1732377683 '{"topic":"axis-is/CAM001/event","payload":"...","attempts":2}'
+ZADD axis-is:queue:mqtt:retry 1732377683 '{"topic":"axis-is/CAM001/event","payload":"...","attempts":2}'
 # Retry in 60 seconds
 
 # Get messages ready for retry
-ZRANGEBYSCORE axion:queue:mqtt:retry -inf NOW
+ZRANGEBYSCORE axis-is:queue:mqtt:retry -inf NOW
 
 # Remove after successful retry
-ZREM axion:queue:mqtt:retry '{"topic":"axis-is/CAM001/event",...}'
+ZREM axis-is:queue:mqtt:retry '{"topic":"axis-is/CAM001/event",...}'
 
 # ============================================================================
 # DEAD LETTER QUEUE - Failed after max retries
-# Key: axion:queue:mqtt:dead_letter
+# Key: axis-is:queue:mqtt:dead_letter
 # Type: List
 # ============================================================================
 
-LPUSH axion:queue:mqtt:dead_letter '{"topic":"axis-is/CAM001/event","payload":"...","attempts":5,"final_error":"max_retries_exceeded","failed_at":1732377923}'
+LPUSH axis-is:queue:mqtt:dead_letter '{"topic":"axis-is/CAM001/event","payload":"...","attempts":5,"final_error":"max_retries_exceeded","failed_at":1732377923}'
 
 # Monitor dead letter queue size
-LLEN axion:queue:mqtt:dead_letter
+LLEN axis-is:queue:mqtt:dead_letter
 
 # Drain dead letters for manual review
-LRANGE axion:queue:mqtt:dead_letter 0 -1
+LRANGE axis-is:queue:mqtt:dead_letter 0 -1
 ```
 
 ---
@@ -1202,52 +1202,52 @@ LRANGE axion:queue:mqtt:dead_letter 0 -1
 ```redis
 # ============================================================================
 # CLAUDE API RATE LIMIT - Counter with sliding window
-# Key: axion:ratelimit:claude:calls:{window}
+# Key: axis-is:ratelimit:claude:calls:{window}
 # Type: String (counter)
 # TTL: 60 seconds
 # ============================================================================
 
 # Increment call counter
-INCR axion:ratelimit:claude:calls:1732377600
-EXPIRE axion:ratelimit:claude:calls:1732377600 60
+INCR axis-is:ratelimit:claude:calls:1732377600
+EXPIRE axis-is:ratelimit:claude:calls:1732377600 60
 
 # Check if under limit
-GET axion:ratelimit:claude:calls:1732377600
+GET axis-is:ratelimit:claude:calls:1732377600
 # If < 60, allow call
 
 # ============================================================================
 # CLAUDE API TOKEN USAGE - Hash tracking token consumption
-# Key: axion:ratelimit:claude:tokens
+# Key: axis-is:ratelimit:claude:tokens
 # Type: Hash
 # ============================================================================
 
-HSET axion:ratelimit:claude:tokens
+HSET axis-is:ratelimit:claude:tokens
   total_used "1245678"
   last_hour_used "4532"
   last_call_tokens "1523"
   budget_remaining "754322"
   reset_at "1732381200"
 
-HINCRBY axion:ratelimit:claude:tokens total_used 1523
-HINCRBY axion:ratelimit:claude:tokens last_hour_used 1523
+HINCRBY axis-is:ratelimit:claude:tokens total_used 1523
+HINCRBY axis-is:ratelimit:claude:tokens last_hour_used 1523
 
 # ============================================================================
 # CAMERA-SPECIFIC RATE LIMITS - Sorted set (score = last call time)
-# Key: axion:ratelimit:camera:claude_calls
+# Key: axis-is:ratelimit:camera:claude_calls
 # Type: Sorted Set
 # ============================================================================
 
 # Record camera API call
-ZADD axion:ratelimit:camera:claude_calls 1732377623 "CAM001"
+ZADD axis-is:ratelimit:camera:claude_calls 1732377623 "CAM001"
 
 # Count calls in last minute per camera
-ZCOUNT axion:ratelimit:camera:claude_calls (NOW-60) +inf
+ZCOUNT axis-is:ratelimit:camera:claude_calls (NOW-60) +inf
 
 # Get cameras that haven't called recently (prioritize them)
-ZRANGEBYSCORE axion:ratelimit:camera:claude_calls -inf (NOW-300)
+ZRANGEBYSCORE axis-is:ratelimit:camera:claude_calls -inf (NOW-300)
 
 # Remove old entries
-ZREMRANGEBYSCORE axion:ratelimit:camera:claude_calls -inf (NOW-3600)
+ZREMRANGEBYSCORE axis-is:ratelimit:camera:claude_calls -inf (NOW-3600)
 ```
 
 ---
@@ -1406,10 +1406,10 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm"; -- For text search
 CREATE EXTENSION IF NOT EXISTS "btree_gin"; -- For JSONB indexes
 
 -- Create schemas
-CREATE SCHEMA IF NOT EXISTS axion;
+CREATE SCHEMA IF NOT EXISTS axis-is;
 CREATE SCHEMA IF NOT EXISTS archive;
 
-SET search_path TO axion, public;
+SET search_path TO axis-is, public;
 
 -- Create tables (see section 1 for full DDL)
 \i 001_create_cameras.sql
@@ -1595,7 +1595,7 @@ enable_partitionwise_aggregate = on
 
 ```ini
 [databases]
-axion = host=localhost port=5432 dbname=axion
+axis-is = host=localhost port=5432 dbname=axis-is
 
 [pgbouncer]
 listen_addr = *
@@ -1933,24 +1933,24 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RETENTION_DAYS=30
 
 # 1. Full database backup (compressed)
-pg_dump -h localhost -U axion -d axion \
+pg_dump -h localhost -U axis-is -d axis-is \
     --format=custom \
     --compress=9 \
-    --file="${BACKUP_DIR}/axion_full_${TIMESTAMP}.dump"
+    --file="${BACKUP_DIR}/axis-is_full_${TIMESTAMP}.dump"
 
 # 2. Schema-only backup (for quick recovery)
-pg_dump -h localhost -U axion -d axion \
+pg_dump -h localhost -U axis-is -d axis-is \
     --schema-only \
-    --file="${BACKUP_DIR}/axion_schema_${TIMESTAMP}.sql"
+    --file="${BACKUP_DIR}/axis-is_schema_${TIMESTAMP}.sql"
 
 # 3. Partition-specific backups (hot partitions only)
-for partition in $(psql -h localhost -U axion -d axion -tAc \
+for partition in $(psql -h localhost -U axis-is -d axis-is -tAc \
     "SELECT tablename FROM pg_tables
      WHERE tablename LIKE 'camera_events_%'
      AND tablename >= 'camera_events_' || TO_CHAR(NOW() - INTERVAL '7 days', 'YYYY_MM_DD')
      ORDER BY tablename DESC LIMIT 7")
 do
-    pg_dump -h localhost -U axion -d axion \
+    pg_dump -h localhost -U axis-is -d axis-is \
         --table="${partition}" \
         --format=custom \
         --compress=9 \
@@ -1963,7 +1963,7 @@ find "${BACKUP_DIR}" -name "*.sql" -mtime +${RETENTION_DAYS} -delete
 
 # 5. Upload to S3 (optional)
 if command -v aws &> /dev/null; then
-    aws s3 sync "${BACKUP_DIR}" "s3://axion-backups/postgres/" \
+    aws s3 sync "${BACKUP_DIR}" "s3://axis-is-backups/postgres/" \
         --exclude "*" \
         --include "*${TIMESTAMP}*"
 fi
@@ -1979,21 +1979,21 @@ echo "Backup completed: ${TIMESTAMP}"
 # ============================================================================
 
 # 1. Full database restore (destructive)
-dropdb -h localhost -U postgres axion
-createdb -h localhost -U postgres axion
-pg_restore -h localhost -U axion -d axion \
+dropdb -h localhost -U postgres axis-is
+createdb -h localhost -U postgres axis-is
+pg_restore -h localhost -U axis-is -d axis-is \
     --format=custom \
     --jobs=4 \
-    /var/backups/axis-is/postgres/axion_full_20251123_020000.dump
+    /var/backups/axis-is/postgres/axis-is_full_20251123_020000.dump
 
 # 2. Restore single partition (e.g., lost current day data)
-pg_restore -h localhost -U axion -d axion \
+pg_restore -h localhost -U axis-is -d axis-is \
     --table=camera_events_2025_11_23 \
     /var/backups/axis-is/postgres/camera_events_2025_11_23_020000.dump
 
 # 3. Restore schema only (for new environment)
-psql -h localhost -U axion -d axion \
-    -f /var/backups/axis-is/postgres/axion_schema_20251123_020000.sql
+psql -h localhost -U axis-is -d axis-is \
+    -f /var/backups/axis-is/postgres/axis-is_schema_20251123_020000.sql
 
 # 4. Point-in-time recovery (requires WAL archiving)
 pg_basebackup -h localhost -U postgres -D /var/lib/postgresql/data_restore

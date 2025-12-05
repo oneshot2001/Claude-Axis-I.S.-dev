@@ -34,6 +34,9 @@
 #include "MQTT.h"
 #include "core.h"
 
+/* External: Frame publisher callback for MQTT messages */
+extern void frame_request_callback(const char* topic, const char* payload);
+
 #define APP_PACKAGE "axis_is_poc"
 #define APP_VERSION "2.0.0"
 
@@ -209,6 +212,83 @@ void HTTP_ENDPOINT_Modules(ACAP_HTTP_Response response, const ACAP_HTTP_Request 
 }
 
 /**
+ * HTTP UI endpoint (Static File Serving)
+ */
+void HTTP_ENDPOINT_UI(ACAP_HTTP_Response response, const ACAP_HTTP_Request request) {
+    const char* uri = FCGX_GetParam("REQUEST_URI", request->request->envp);
+    if (!uri) {
+        ACAP_HTTP_Respond_Error(response, 400, "Invalid URI");
+        return;
+    }
+    
+    // URI is like /local/axis_is_poc/ui/index.html
+    const char* prefix = "/ui/";
+    const char* start = strstr(uri, prefix);
+    char filepath[256];
+    
+    if (start) {
+        start += strlen(prefix);
+        if (*start == '\0' || *start == '?') {
+            snprintf(filepath, sizeof(filepath), "html/index.html");
+        } else {
+            const char* query = strchr(start, '?');
+            size_t len = query ? (size_t)(query - start) : strlen(start);
+            if (len > 200) len = 200; 
+            snprintf(filepath, sizeof(filepath), "html/%.*s", (int)len, start);
+        }
+    } else {
+        snprintf(filepath, sizeof(filepath), "html/index.html");
+    }
+    
+    if (strstr(filepath, "..")) {
+        ACAP_HTTP_Respond_Error(response, 403, "Forbidden");
+        return;
+    }
+    
+    if (!ACAP_HTTP_Serve_Static(response, filepath)) {
+        ACAP_HTTP_Respond_Error(response, 404, "Not Found");
+    }
+}
+
+/**
+ * HTTP Detections endpoint
+ */
+void HTTP_ENDPOINT_Detections(ACAP_HTTP_Response response, const ACAP_HTTP_Request request) {
+    if (!core_ctx) {
+        ACAP_HTTP_Respond_Error(response, 503, "Core not initialized");
+        return;
+    }
+    cJSON* meta = core_get_latest_metadata(core_ctx);
+    if (meta) {
+        // Direct pass of cJSON object
+        ACAP_HTTP_Respond_JSON(response, meta);
+        cJSON_Delete(meta);
+    } else {
+        cJSON* empty = cJSON_CreateObject();
+        ACAP_HTTP_Respond_JSON(response, empty);
+        cJSON_Delete(empty);
+    }
+}
+
+/**
+ * HTTP Frame endpoint
+ */
+void HTTP_ENDPOINT_Frame(ACAP_HTTP_Response response, const ACAP_HTTP_Request request) {
+    ACAP_HTTP_Respond_Error(response, 501, "Not Implemented (Requires JPEG Encoder)");
+}
+
+/**
+ * HTTP Config endpoint
+ */
+void HTTP_ENDPOINT_Config(ACAP_HTTP_Response response, const ACAP_HTTP_Request request) {
+    if (!core_ctx || !core_ctx->config) {
+        ACAP_HTTP_Respond_Error(response, 503, "Config not available");
+        return;
+    }
+    ACAP_HTTP_Respond_JSON(response, core_ctx->config);
+}
+
+/**
  * Signal handler for clean shutdown
  */
 static gboolean signal_handler(gpointer user_data) {
@@ -263,9 +343,13 @@ int main(int argc, char* argv[]) {
     ACAP(APP_PACKAGE, Settings_Updated_Callback);
     ACAP_HTTP_Node("status", HTTP_ENDPOINT_Status);
     ACAP_HTTP_Node("modules", HTTP_ENDPOINT_Modules);
+    ACAP_HTTP_Node("ui/", HTTP_ENDPOINT_UI);
+    ACAP_HTTP_Node("detections", HTTP_ENDPOINT_Detections);
+    ACAP_HTTP_Node("frame/preview", HTTP_ENDPOINT_Frame);
+    ACAP_HTTP_Node("config", HTTP_ENDPOINT_Config);
 
-    // Initialize MQTT
-    if (!MQTT_Init(Main_MQTT_Status, NULL)) {
+    // Initialize MQTT with frame request callback
+    if (!MQTT_Init(Main_MQTT_Status, frame_request_callback)) {
         LOG_ERR("Failed to initialize MQTT\n");
         goto error;
     }

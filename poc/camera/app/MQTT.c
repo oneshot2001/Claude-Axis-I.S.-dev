@@ -588,7 +588,6 @@ static void connectionLost(void* context, char* cause) {
 
 static int
 messageArrived(void* context, char* topicName, int topicLen, MQTTAsync_message* message) {
-/*	
     if (userSubscriptionCallback) {
         // Create null-terminated copy for callback
         char *payload = malloc(message->payloadlen + 1);
@@ -599,10 +598,9 @@ messageArrived(void* context, char* topicName, int topicLen, MQTTAsync_message* 
             free(payload);  // Free our copy, not the original
         }
     }
-    
+
     mqtt.freeMessage(&message);  // Proper cleanup
     mqtt.free(topicName);
-*/	
     return 1;
 }
 

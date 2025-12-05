@@ -48,6 +48,9 @@ typedef struct {
     char request_reason[256];
 } FramePublisherState;
 
+/* Global state pointer for MQTT callback access */
+static FramePublisherState* g_frame_publisher_state = NULL;
+
 /* Base64 encoding table */
 static const char base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -151,11 +154,18 @@ static unsigned char* encode_yuv_to_jpeg(const unsigned char* yuv_data, int widt
 
 /**
  * MQTT callback for frame requests
+ * Called by MQTT library when message arrives on subscribed topic
  */
-void frame_request_callback(const char* topic, const char* payload, void* user_data) {
-    FramePublisherState* state = (FramePublisherState*)user_data;
+void frame_request_callback(const char* topic, const char* payload) {
+    FramePublisherState* state = g_frame_publisher_state;
 
     if (!state || !state->enabled) {
+        LOG_WARN("Frame request received but module not ready\n");
+        return;
+    }
+
+    // Only process frame_request topic
+    if (!strstr(topic, "frame_request")) {
         return;
     }
 
@@ -235,13 +245,13 @@ static int frame_publisher_init(ModuleContext* ctx, cJSON* config) {
     state->requests_throttled = 0;
     state->frame_requested = false;
 
+    // Set global state pointer for MQTT callback access
+    g_frame_publisher_state = state;
+
     // Subscribe to frame request topic
     char topic[256];
     snprintf(topic, sizeof(topic), "axis-is/camera/%s/frame_request", state->camera_id);
     MQTT_Subscribe(topic);
-
-    // Note: frame_request_callback needs to be registered via MQTT_Init's messageCallback parameter
-    // For now, just subscribe to the topic
 
     LOG("Subscribed to: %s\n", topic);
     LOG("Configuration: quality=%d rate_limit=%ds\n",

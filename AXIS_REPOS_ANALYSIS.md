@@ -413,7 +413,7 @@ RUN acap-build /opt/app
 
 # Stage 2: Runtime
 FROM arm64v8/ubuntu:22.04
-COPY --from=builder /opt/app/axion /usr/local/bin/
+COPY --from=builder /opt/app/axis-is /usr/local/bin/
 COPY --from=builder /opt/app/models/ /usr/local/share/axis-is/models/
 ```
 
@@ -424,8 +424,8 @@ While not explicit in Caddy bundle, Axis best practice:
 ```yaml
 # docker-compose.yml pattern
 services:
-  axion:
-    image: axion:latest
+  axis-is:
+    image: axis-is:latest
     deploy:
       resources:
         limits:
@@ -445,7 +445,7 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 **Axis I.S. Pattern:**
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD [ -f /tmp/axion.pid ] && kill -0 $(cat /tmp/axion.pid) || exit 1
+    CMD [ -f /tmp/axis-is.pid ] && kill -0 $(cat /tmp/axis-is.pid) || exit 1
 ```
 
 #### CI/CD Automation
@@ -468,8 +468,8 @@ jobs:
         run: ./version_extractor.sh
       - name: Build and push
         run: |
-          docker build -t axion:${VERSION} .
-          docker push axion:${VERSION}
+          docker build -t axis-is:${VERSION} .
+          docker push axis-is:${VERSION}
 ```
 
 **Axis I.S. Application:**
@@ -483,16 +483,16 @@ jobs:
 ```bash
 # Semantic versioning from Dockerfile
 VERSION=$(grep "FROM caddy:" Dockerfile | grep -oP '\d+\.\d+\.\d+')
-docker tag axion:latest axion:${VERSION}
-docker tag axion:latest axion:${VERSION%.*}
-docker tag axion:latest axion:${VERSION%%.*}
+docker tag axis-is:latest axis-is:${VERSION}
+docker tag axis-is:latest axis-is:${VERSION%.*}
+docker tag axis-is:latest axis-is:${VERSION%%.*}
 ```
 
 Results in:
-- `axion:1.0.0` (patch version)
-- `axion:1.0` (minor version)
-- `axion:1` (major version)
-- `axion:latest`
+- `axis-is:1.0.0` (patch version)
+- `axis-is:1.0` (minor version)
+- `axis-is:1` (major version)
+- `axis-is:latest`
 
 ---
 
@@ -693,14 +693,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy built artifacts
-COPY --from=builder /opt/app/axion /usr/local/bin/
+COPY --from=builder /opt/app/axis-is /usr/local/bin/
 COPY --from=builder /opt/app/models/ /usr/local/share/axis-is/models/
 
 # Runtime user
 RUN useradd -m -s /bin/bash sdk
 USER sdk
 
-CMD ["/usr/local/bin/axion"]
+CMD ["/usr/local/bin/axis-is"]
 ```
 
 ---
@@ -746,8 +746,8 @@ Despite all these excellent examples, Axis I.S. still needs:
 
 3. **Create Axis I.S. template based on CV SDK example**
    ```bash
-   cp -r acap-computer-vision-sdk-examples/object-detector axion
-   cd axion
+   cp -r acap-computer-vision-sdk-examples/object-detector axis-is
+   cd axis-is
    # Customize for Axis I.S.
    ```
 

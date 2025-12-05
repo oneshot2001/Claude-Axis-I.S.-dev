@@ -6,7 +6,7 @@ import asyncio
 import logging
 import sys
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from typing import Dict, Any
 
@@ -15,6 +15,7 @@ from database import db, redis
 from mqtt_handler import mqtt_handler
 from ai_factory import get_ai_agent
 from scene_memory import scene_memory
+from ws_manager import manager
 
 # Configure logging
 logging.basicConfig(
@@ -244,6 +245,18 @@ async def get_config():
         "vehicle_confidence_threshold": settings.vehicle_confidence_threshold,
         "max_concurrent_analyses": settings.max_concurrent_analyses
     }
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            # Handle incoming messages (if any)
+            # await manager.broadcast(f"Client says: {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
 # ============================================================================

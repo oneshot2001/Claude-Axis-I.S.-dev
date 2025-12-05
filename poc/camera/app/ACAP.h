@@ -81,6 +81,7 @@ int 		ACAP_HTTP_Header_JSON(ACAP_HTTP_Response response);
 int 		ACAP_HTTP_Header_TEXT(ACAP_HTTP_Response response);
 int 		ACAP_HTTP_Header_FILE(ACAP_HTTP_Response response, const char* filename, 
                          const char* contenttype, unsigned filelength);
+int         ACAP_HTTP_Serve_Static(ACAP_HTTP_Response response, const char* filepath);
 
 // HTTP Response functions
 int 		ACAP_HTTP_Respond_String(ACAP_HTTP_Response response, const char* fmt, ...);

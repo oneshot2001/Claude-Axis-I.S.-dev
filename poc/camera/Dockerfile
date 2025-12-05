@@ -79,7 +79,8 @@ RUN . /opt/axis/acapsdk/environment-setup* && \
         -a settings/frame_publisher.json \
         -a models/yolov5n_artpec8_coco_640.tflite \
         -a models/yolov5n_artpec9_coco_640.tflite \
-        -a lib/
+        -a lib/ \
+        -a html/
 
 # Extract the built .eap file
 FROM scratch

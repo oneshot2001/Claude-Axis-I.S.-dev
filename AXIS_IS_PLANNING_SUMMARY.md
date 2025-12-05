@@ -455,8 +455,8 @@ Axis I.S._PLANNING_SUMMARY.md           - This document
 ```
 Axis I.S._CRITICAL_IMPLEMENTATION_GUIDE.md  - Critical gotchas
 Axis I.S._Integration_Guide.md              - DLPU + Bandwidth guide
-axion_claude_integration.py             - Python reference
-axion_complete_deployment.sh            - Deployment script
+axis-is_claude_integration.py             - Python reference
+axis-is_complete_deployment.sh            - Deployment script
 ```
 
 ### Next Steps

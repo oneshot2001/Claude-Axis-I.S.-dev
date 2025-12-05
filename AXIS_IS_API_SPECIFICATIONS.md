@@ -101,7 +101,7 @@ Retrieve application manifest, version, and capabilities.
     },
     "uptime_seconds": 86400,
     "manifest": {
-      "appId": "com.axis.axion",
+      "appId": "com.axis.axis-is",
       "vendor": "Axis Communications",
       "architecture": "aarch64"
     },
@@ -151,7 +151,7 @@ Retrieve current Axis I.S. configuration including MQTT, ML model, and streaming
       "enabled": true,
       "broker": "192.168.1.50",
       "port": 1883,
-      "client_id": "axion-camera-001",
+      "client_id": "axis-is-camera-001",
       "use_tls": true,
       "qos": 1,
       "keepalive": 60,
@@ -1094,7 +1094,7 @@ Camera sends status update with current slot assignment.
   },
   "delivery": {
     "method": "http_upload",
-    "endpoint": "https://cloud.axion.com/api/v1/frames/upload",
+    "endpoint": "https://cloud.axis-is.com/api/v1/frames/upload",
     "auth_token": "Bearer eyJhbGciOiJIUzI1NiIs..."
   }
 }
@@ -1126,7 +1126,7 @@ Camera sends event message with frame delivery status:
     "frame_id": 86350,
     "size_bytes": 245600,
     "delivery_method": "http_upload",
-    "upload_url": "https://cloud.axion.com/api/v1/frames/86350"
+    "upload_url": "https://cloud.axis-is.com/api/v1/frames/86350"
   }
 }
 ```
@@ -1275,7 +1275,7 @@ class SequenceValidator:
 
 The Cloud Services REST API provides programmatic access to camera management, analysis queries, alerts, and system monitoring.
 
-**Base URL:** `https://api.axion.com/v1`
+**Base URL:** `https://api.axis-is.com/v1`
 
 **Authentication:** JWT Bearer Token or API Key
 
@@ -1290,13 +1290,13 @@ The Cloud Services REST API provides programmatic access to camera management, a
 **Header:**
 
 ```http
-Authorization: Bearer axion_sk_live_abc123def456...
+Authorization: Bearer axis-is_sk_live_abc123def456...
 ```
 
 **API Key Formats:**
 
-- Production: `axion_sk_live_*`
-- Testing: `axion_sk_test_*`
+- Production: `axis-is_sk_live_*`
+- Testing: `axis-is_sk_test_*`
 
 #### 4.2.2 JWT Authentication
 
@@ -1471,7 +1471,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
     "name": "Parking Lot Exit",
     "status": "pending",
     "api_credentials": {
-      "username": "axion_cam_005",
+      "username": "axis-is_cam_005",
       "password": "generated_secret_123",
       "mqtt_topic_prefix": "axis-is/camera/axis-camera-005"
     },
@@ -1611,7 +1611,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
     "frame_id": 86400,
     "analysis_type": "claude_vision",
     "input": {
-      "frame_url": "https://storage.axion.com/frames/86400.jpg",
+      "frame_url": "https://storage.axis-is.com/frames/86400.jpg",
       "metadata": {
         "detections": [
           {"class": "person", "confidence": 0.87}
@@ -1932,7 +1932,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
     },
     "alerting": {
       "email_enabled": true,
-      "webhook_url": "https://hooks.example.com/axion"
+      "webhook_url": "https://hooks.example.com/axis-is"
     }
   }
 }
@@ -1977,9 +1977,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 
 **Full OpenAPI 3.0 spec available at:** `/openapi.json`
 
-**Interactive Documentation (Swagger UI):** `https://api.axion.com/docs`
+**Interactive Documentation (Swagger UI):** `https://api.axis-is.com/docs`
 
-**Redoc Documentation:** `https://api.axion.com/redoc`
+**Redoc Documentation:** `https://api.axis-is.com/redoc`
 
 ---
 
@@ -2115,13 +2115,13 @@ Internal API for Claude Agent integration (not exposed externally).
 
 Real-time WebSocket API for live dashboard updates.
 
-**Endpoint:** `wss://api.axion.com/v1/ws`
+**Endpoint:** `wss://api.axis-is.com/v1/ws`
 
 **Protocol:** WebSocket (RFC 6455)
 
 **Authentication:** JWT token in connection URL
 
-**Connection URL:** `wss://api.axion.com/v1/ws?token=eyJhbGciOiJIUzI1NiIs...`
+**Connection URL:** `wss://api.axis-is.com/v1/ws?token=eyJhbGciOiJIUzI1NiIs...`
 
 ### 6.2 Connection Flow
 
@@ -2289,7 +2289,7 @@ Real-time WebSocket API for live dashboard updates.
       }
     ],
     "request_id": "req_12345",
-    "documentation_url": "https://docs.axion.com/errors/ERROR_CODE"
+    "documentation_url": "https://docs.axis-is.com/errors/ERROR_CODE"
   },
   "timestamp": "2025-11-23T10:30:00Z"
 }
@@ -2403,8 +2403,8 @@ class CircuitBreaker:
 **Version in URL:**
 
 ```
-https://api.axion.com/v1/cameras
-https://api.axion.com/v2/cameras
+https://api.axis-is.com/v1/cameras
+https://api.axis-is.com/v2/cameras
 ```
 
 **Advantages:**
@@ -2417,8 +2417,8 @@ https://api.axion.com/v2/cameras
 
 ```http
 GET /cameras HTTP/1.1
-Host: api.axion.com
-Accept: application/vnd.axion.v1+json
+Host: api.axis-is.com
+Accept: application/vnd.axis-is.v1+json
 ```
 
 ### 8.2 Version Lifecycle
@@ -2438,7 +2438,7 @@ Accept: application/vnd.axion.v1+json
 HTTP/1.1 200 OK
 X-API-Deprecation-Warning: This API version is deprecated. Migrate to v2 by 2026-06-01.
 X-API-Deprecation-Date: 2026-06-01
-X-API-Migration-Guide: https://docs.axion.com/migration/v1-to-v2
+X-API-Migration-Guide: https://docs.axis-is.com/migration/v1-to-v2
 ```
 
 **Deprecation Response Field:**
@@ -2449,7 +2449,7 @@ X-API-Migration-Guide: https://docs.axion.com/migration/v1-to-v2
   "deprecation": {
     "deprecated": true,
     "sunset_date": "2026-06-01",
-    "migration_guide": "https://docs.axion.com/migration/v1-to-v2",
+    "migration_guide": "https://docs.axis-is.com/migration/v1-to-v2",
     "alternative": "GET /v2/cameras"
   }
 }
@@ -2535,7 +2535,7 @@ def handle_metadata(msg):
 
 **API Keys:**
 
-- Format: `axion_sk_live_*` (production) or `axion_sk_test_*` (testing)
+- Format: `axis-is_sk_live_*` (production) or `axis-is_sk_test_*` (testing)
 - Scoped permissions (read-only, write, admin)
 - Rate limited per key
 - Revocable
@@ -2565,7 +2565,7 @@ Certificate: Let's Encrypt
 **HTTPS:**
 
 ```
-API: https://api.axion.com
+API: https://api.axis-is.com
 Protocol: HTTPS/2
 TLS: 1.3
 HSTS: Enabled (max-age=31536000)

@@ -99,14 +99,14 @@ Edit `poc/camera/app/settings/mqtt.json`:
 {
   "broker": "192.168.1.50",  # <-- Update to your broker IP
   "port": 1883,
-  "clientId": "axion-camera-001"
+  "clientId": "axis-is-camera-001"
 }
 ```
 
 Edit `poc/camera/app/settings/settings.json`:
 ```json
 {
-  "axion": {
+  "axis-is": {
     "camera_id": "axis-camera-001",  # <-- Unique per camera
     "target_fps": 10,
     "confidence_threshold": 0.25
@@ -408,7 +408,7 @@ For each additional camera:
 2. Update camera_id in settings.json:
    ```json
    {
-     "axion": {
+     "axis-is": {
        "camera_id": "axis-camera-002"  // Unique!
      }
    }
@@ -524,7 +524,7 @@ After 24 hours:
 **Symptom:** App shows "Stopped" in web interface
 
 **Solutions:**
-1. Check logs: `ssh root@192.168.1.101 "tail -100 /var/log/messages | grep axion"`
+1. Check logs: `ssh root@192.168.1.101 "tail -100 /var/log/messages | grep axis-is"`
 2. Check manifest.json is valid JSON
 3. Verify dependencies (larod, vdo) available on camera
 4. Try manual start: `ssh root@192.168.1.101 "/usr/local/packages/axis_is_poc/axis_is_poc"`
