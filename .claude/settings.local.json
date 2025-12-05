@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker logs:*)",
+      "Bash(curl:*)",
+      "Bash(timeout 5 docker exec:*)",
+      "Bash(ipconfig:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout 10 docker exec:*)",
+      "Bash(docker --version:*)",
+      "Bash(bash:*)",
+      "Bash(docker create:*)",
+      "Bash(docker cp temp-axis-is:/ -)",
+      "Bash(tar:*)",
+      "Bash(docker rm:*)",
+      "Bash(docker run:*)",
+      "Bash(timeout 15 docker exec:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(ls:*)",
+      "Bash(docker system prune:*)",
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

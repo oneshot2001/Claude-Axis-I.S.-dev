@@ -8,31 +8,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Architecture:** Camera Edge (ACAP/C) → MQTT → Cloud Service (Python/FastAPI) → AI Analysis (Claude/Gemini)
 
-## Repository Structure
-
-```
-axis-is/
-├── Claude-Axis-I.S.-dev/     # Main development - camera & cloud implementation
-│   ├── poc/camera/           # ACAP native camera application (C)
-│   │   ├── app/              # Source code and Makefile
-│   │   ├── build.sh          # Docker-based build script
-│   │   └── deploy.sh         # Camera deployment script
-│   └── cloud-service/        # Cloud service (Python/FastAPI)
-└── cloud-service/            # Alternative cloud service deployment
-```
-
 ## Build Commands
 
 ### Camera-Side (ACAP Native Application)
 
 ```bash
 # Build using Docker (recommended - handles SDK and cross-compilation)
-cd Claude-Axis-I.S.-dev/poc/camera
+cd poc/camera
 ./build.sh
 
 # Creates: Axis_I.S._POC_-_Edge_AI_Surveillance_(Native)_2_0_0_aarch64.eap
 
 # Deploy to camera
+cd poc
 ./deploy.sh <camera-ip> <username> <password>
 
 # Direct build (inside ACAP SDK container)
@@ -44,13 +32,14 @@ make clean && make
 
 ```bash
 # Start all services (Mosquitto, PostgreSQL, Redis, FastAPI)
-cd Claude-Axis-I.S.-dev/cloud-service
+cd cloud-service
 docker-compose up -d
 
 # View logs
 docker-compose logs -f cloud-service
 
 # Local development (without Docker)
+cd cloud-service
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 python main.py
@@ -89,7 +78,7 @@ Vdo_Release_Frame(vdo_ctx, buffer);
 
 ### Module Registration System
 
-Modules self-register at compile time using the `MODULE_REGISTER` macro in [poc/camera/app/module.h](Claude-Axis-I.S.-dev/poc/camera/app/module.h):
+Modules self-register at compile time using the `MODULE_REGISTER` macro in [poc/camera/app/module.h](poc/camera/app/module.h):
 
 ```c
 MODULE_REGISTER(my_module, "my_module", "1.0.0", 40,
@@ -123,13 +112,13 @@ Priority determines execution order (lower = earlier): Detection (10), Custom mo
 
 ## Cloud Service AI Agents
 
-The cloud service supports multiple AI providers via factory pattern in [cloud-service/ai_factory.py](Claude-Axis-I.S.-dev/cloud-service/ai_factory.py):
+The cloud service supports multiple AI providers via factory pattern in [cloud-service/ai_factory.py](cloud-service/ai_factory.py):
 
 **Configuration (.env):**
 ```bash
 AI_PROVIDER=claude  # or "gemini"
 ANTHROPIC_API_KEY=sk-ant-...
-CLAUDE_MODEL=claude-sonnet-4-5-20250514
+CLAUDE_MODEL=claude-3-5-sonnet-20241022
 # or
 GEMINI_API_KEY=AIza-...
 GEMINI_MODEL=gemini-3-pro
@@ -137,9 +126,9 @@ GEMINI_MODEL=gemini-3-pro
 
 All agents implement `analyze_scene(camera_id, context)` → executive summary.
 
-To modify AI analysis: Edit [cloud-service/claude_agent.py](Claude-Axis-I.S.-dev/cloud-service/claude_agent.py) or [cloud-service/gemini_agent.py](Claude-Axis-I.S.-dev/cloud-service/gemini_agent.py).
+To modify AI analysis: Edit [cloud-service/claude_agent.py](cloud-service/claude_agent.py) or [cloud-service/gemini_agent.py](cloud-service/gemini_agent.py).
 
-To adjust triggers: Edit `should_request_frame()` in [cloud-service/scene_memory.py](Claude-Axis-I.S.-dev/cloud-service/scene_memory.py).
+To adjust triggers: Edit `should_request_frame()` in [cloud-service/scene_memory.py](cloud-service/scene_memory.py).
 
 ## Testing Endpoints
 
@@ -188,8 +177,3 @@ curl -X POST http://localhost:8000/cameras/{camera_id}/request-frame?reason=manu
 - Avoid blocking operations in `process()` (max 100ms)
 - Always free allocated memory in `module_cleanup()`
 - Each module needs a corresponding `settings/{module}.json`
-
-## Hardware Requirements
-
-**Camera:** AXIS camera with ARTPEC-8/9 SoC, AXIS OS 12.x
-**Cloud:** Docker, PostgreSQL, Redis, MQTT broker, Claude/Gemini API key

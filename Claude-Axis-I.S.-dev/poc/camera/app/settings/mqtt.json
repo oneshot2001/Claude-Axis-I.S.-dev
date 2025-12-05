@@ -1,0 +1,12 @@
+{
+  "address": "192.168.0.50",
+  "port": "1883",
+  "clientId": "axis-is-camera-001",
+  "user": "",
+  "password": "",
+  "tls": false,
+  "verify": false,
+  "preTopic": "",
+  "connect": true,
+  "_comment": "Windows PC on local network"
+}
