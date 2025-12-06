@@ -14,7 +14,7 @@ const StatusManager = {
 
     async fetchStatus() {
         try {
-            const response = await fetch('/local/axis_is_poc/status');
+            const response = await fetch('/local/axis_is_poc/app_status');
             if (!response.ok) throw new Error('Network response was not ok');
             
             const data = await response.json();

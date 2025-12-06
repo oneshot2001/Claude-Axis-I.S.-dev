@@ -176,9 +176,7 @@ void HTTP_ENDPOINT_Status(ACAP_HTTP_Response response, const ACAP_HTTP_Request r
         cJSON_AddItemToObject(status, "modules", modules);
     }
 
-    char* json_str = cJSON_Print(status);
-    ACAP_HTTP_Respond_JSON(response, json_str);
-    free(json_str);
+    ACAP_HTTP_Respond_JSON(response, status);
     cJSON_Delete(status);
 }
 
@@ -205,9 +203,7 @@ void HTTP_ENDPOINT_Modules(ACAP_HTTP_Response response, const ACAP_HTTP_Request 
     }
     cJSON_AddItemToObject(json, "modules", modules);
 
-    char* json_str = cJSON_Print(json);
-    ACAP_HTTP_Respond_JSON(response, json_str);
-    free(json_str);
+    ACAP_HTTP_Respond_JSON(response, json);
     cJSON_Delete(json);
 }
 
@@ -289,6 +285,56 @@ void HTTP_ENDPOINT_Config(ACAP_HTTP_Response response, const ACAP_HTTP_Request r
 }
 
 /**
+ * HTTP logs endpoint - fetches recent syslog entries for this app
+ */
+void HTTP_ENDPOINT_Logs(ACAP_HTTP_Response response, const ACAP_HTTP_Request request) {
+    FILE* fp;
+    char buffer[512];
+    char* logs = NULL;
+    size_t logs_size = 0;
+    size_t logs_capacity = 8192;
+
+    logs = malloc(logs_capacity);
+    if (!logs) {
+        ACAP_HTTP_Respond_Error(response, 500, "Memory allocation failed");
+        return;
+    }
+    logs[0] = '\0';
+
+    // Get recent log entries for axis_is_poc from syslog
+    fp = popen("grep axis_is_poc /var/log/messages 2>/dev/null | tail -500", "r");
+    if (fp == NULL) {
+        // Try journalctl as fallback
+        fp = popen("journalctl -u axis_is_poc --no-pager -n 500 2>/dev/null", "r");
+    }
+
+    if (fp != NULL) {
+        while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+            size_t len = strlen(buffer);
+            if (logs_size + len + 1 > logs_capacity) {
+                logs_capacity *= 2;
+                char* new_logs = realloc(logs, logs_capacity);
+                if (!new_logs) {
+                    break;
+                }
+                logs = new_logs;
+            }
+            strcpy(logs + logs_size, buffer);
+            logs_size += len;
+        }
+        pclose(fp);
+    }
+
+    if (logs_size == 0) {
+        strcpy(logs, "No log entries found for axis_is_poc\n");
+    }
+
+    // Send as plain text
+    ACAP_HTTP_Respond_Text(response, logs);
+    free(logs);
+}
+
+/**
  * Signal handler for clean shutdown
  */
 static gboolean signal_handler(gpointer user_data) {
@@ -341,12 +387,13 @@ int main(int argc, char* argv[]) {
 
     // Initialize ACAP framework
     ACAP(APP_PACKAGE, Settings_Updated_Callback);
-    ACAP_HTTP_Node("status", HTTP_ENDPOINT_Status);
+    ACAP_HTTP_Node("app_status", HTTP_ENDPOINT_Status);
     ACAP_HTTP_Node("modules", HTTP_ENDPOINT_Modules);
     ACAP_HTTP_Node("ui/", HTTP_ENDPOINT_UI);
     ACAP_HTTP_Node("detections", HTTP_ENDPOINT_Detections);
     ACAP_HTTP_Node("frame/preview", HTTP_ENDPOINT_Frame);
     ACAP_HTTP_Node("config", HTTP_ENDPOINT_Config);
+    ACAP_HTTP_Node("logs", HTTP_ENDPOINT_Logs);
 
     // Initialize MQTT with frame request callback
     if (!MQTT_Init(Main_MQTT_Status, frame_request_callback)) {

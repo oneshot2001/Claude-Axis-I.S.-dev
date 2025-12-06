@@ -28,7 +28,20 @@
       "Bash(git remote add:*)",
       "Bash(git add:*)",
       "Bash(find:*)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "Bash(break)",
+      "Bash(done)",
+      "Bash(python -m json.tool:*)",
+      "Bash(timeout 30 docker exec:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(cat:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

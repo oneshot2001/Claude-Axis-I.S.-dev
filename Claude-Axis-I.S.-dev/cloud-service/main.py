@@ -6,15 +6,18 @@ import asyncio
 import logging
 import sys
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
-from typing import Dict, Any
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import Dict, Any, List, Optional
 
 from config import settings
 from database import db, redis
 from mqtt_handler import mqtt_handler
 from ai_factory import get_ai_agent
 from scene_memory import scene_memory
+from ws_manager import manager
 
 # Configure logging
 logging.basicConfig(
@@ -77,6 +80,28 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Add CORS middleware for ACAP UI access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, restrict to camera IPs
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# Pydantic models for chat
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    camera_id: str
+    question: str
+    context: Optional[Dict[str, Any]] = None
+    conversation_history: Optional[List[ChatMessage]] = None
+
 
 # ============================================================================
 # API Endpoints
@@ -103,11 +128,15 @@ async def health():
         # Check Redis
         await redis.redis.ping()
 
+        ai_agent = get_ai_agent()
+
         return {
             "status": "healthy",
             "database": "connected",
             "redis": "connected",
-            "mqtt": "connected" if mqtt_handler.running else "disconnected"
+            "mqtt": "connected" if mqtt_handler.running else "disconnected",
+            "ai_provider": ai_agent.get_provider_name(),
+            "ai_model": ai_agent.get_model_name()
         }
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
@@ -244,6 +273,147 @@ async def get_config():
         "vehicle_confidence_threshold": settings.vehicle_confidence_threshold,
         "max_concurrent_analyses": settings.max_concurrent_analyses
     }
+
+
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    """
+    Natural language chat interface for scene analysis.
+    Allows users to ask questions about camera detections in plain English.
+    """
+    from anthropic import AsyncAnthropic
+
+    try:
+        ai_agent = get_ai_agent()
+        logger.info(f"Chat request from {request.camera_id}: {request.question[:100]}...")
+
+        # Get recent scene context from scene memory
+        context = await scene_memory.get_context_for_analysis(request.camera_id)
+        frames = await scene_memory.get_recent_frames(request.camera_id, limit=3, with_images=True)
+
+        # Build the prompt with context
+        context_info = request.context or {}
+        detections = context_info.get('detections', [])
+
+        # Format detection info
+        detection_summary = []
+        for det in detections[:20]:
+            class_names = [
+                'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
+                'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat',
+                'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack',
+                'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+                'kite', 'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket',
+                'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
+                'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair',
+                'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse',
+                'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator',
+                'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
+            ]
+            class_id = det.get('class_id', 0)
+            label = class_names[class_id] if 0 <= class_id < len(class_names) else f'object_{class_id}'
+            conf = det.get('confidence', 0)
+            if conf and 0 < conf <= 1:
+                detection_summary.append(f"- {label}: {conf*100:.0f}% confidence")
+
+        system_prompt = f"""You are an AI assistant analyzing a surveillance camera feed from camera "{request.camera_id}".
+
+**Current Scene Information:**
+- Camera ID: {request.camera_id}
+- Timestamp: {context_info.get('timestamp', 'unknown')}
+- Motion Score: {context_info.get('metadata', {}).get('motion_score', 0):.2f}
+- Objects in Frame: {len(detections)}
+{chr(10).join(detection_summary[:10]) if detection_summary else '- No valid detections above threshold'}
+
+**Scene Memory (Historical Context):**
+- Frames Available: {context.get('frames_available', 0)}
+- Time Span: {context.get('time_span_seconds', 0):.1f} seconds
+- Total Objects Detected: {context.get('total_objects_detected', 0)}
+- Average Motion: {context.get('average_motion_score', 0):.2f}
+
+You are having a conversation with a security operator who can ask natural language questions.
+Answer questions about:
+- What objects/people are currently visible
+- Counting specific object types
+- Describing the scene
+- Assessing activity levels or suspicious behavior
+- Tracking how long objects have been present (based on scene memory)
+
+Be concise, helpful, and specific. If you cannot determine something, say so clearly."""
+
+        # Build conversation messages
+        messages = []
+
+        # Add conversation history
+        if request.conversation_history:
+            for msg in request.conversation_history[-6:]:  # Last 3 exchanges
+                messages.append({
+                    "role": msg.role,
+                    "content": msg.content
+                })
+
+        # Add current question with images if available
+        current_content = []
+
+        # Add images from recent frames
+        for frame in frames[-2:]:  # Up to 2 most recent images
+            if frame.get('image_base64'):
+                current_content.append({
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/jpeg",
+                        "data": frame['image_base64']
+                    }
+                })
+
+        current_content.append({
+            "type": "text",
+            "text": request.question
+        })
+
+        messages.append({
+            "role": "user",
+            "content": current_content if len(current_content) > 1 else request.question
+        })
+
+        # Call Claude API
+        client = AsyncAnthropic(api_key=settings.anthropic_api_key)
+        response = await client.messages.create(
+            model=settings.claude_model,
+            max_tokens=1024,
+            system=system_prompt,
+            messages=messages,
+            timeout=30
+        )
+
+        response_text = response.content[0].text if response.content else "I couldn't generate a response."
+
+        logger.info(f"Chat response generated ({response.usage.output_tokens} tokens)")
+
+        return {
+            "response": response_text,
+            "camera_id": request.camera_id,
+            "tokens_used": response.usage.input_tokens + response.usage.output_tokens,
+            "model": response.model,
+            "provider": ai_agent.get_provider_name()
+        }
+
+    except Exception as e:
+        logger.error(f"Chat error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Chat processing failed: {str(e)}")
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            # Handle incoming messages (if any)
+            # await manager.broadcast(f"Client says: {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 
 # ============================================================================

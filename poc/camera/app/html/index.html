@@ -28,13 +28,17 @@
                         <!-- Future: Camera controls -->
                     </div>
                 </div>
-                <div class="live-view-container">
-                    <!-- Placeholder for video stream (ACAP usually uses separate VAPIX stream) -->
-                    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #333; display: flex; align-items: center; justify-content: center; color: #666;">
-                        <span>Video Stream Placeholder</span>
+                <div class="live-view-container" id="live-view-container">
+                    <!-- MJPEG video stream from camera -->
+                    <img id="videoStream" src="/axis-cgi/mjpg/video.cgi?resolution=640x360&fps=10"
+                         alt="Live Stream"
+                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #1a1a1a;">
+                    <!-- Canvas overlay for detection bounding boxes -->
+                    <canvas id="detectionCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                    <!-- Detection count overlay -->
+                    <div id="detection-overlay" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 12px;">
+                        <span id="detection-count">0 detections</span>
                     </div>
-                    <!-- Canvas overlay for metadata -->
-                    <canvas id="detectionCanvas"></canvas>
                 </div>
             </div>
 
@@ -62,6 +66,42 @@
                     </div>
                 </div>
             </div>
+
+            <!-- AI Chat Interface -->
+            <div class="card" id="chat-card">
+                <div class="card-header">
+                    <h2 class="card-title">AI Scene Analysis</h2>
+                    <div class="card-actions">
+                        <span id="ai-status" style="font-size: 0.75rem; color: #666;">Powered by Claude</span>
+                    </div>
+                </div>
+                <div id="chat-container" style="display: flex; flex-direction: column; height: 300px;">
+                    <!-- Chat Messages -->
+                    <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 10px; background: #f9f9f9; border-radius: 4px; margin-bottom: 10px;">
+                        <div class="chat-message assistant" style="margin-bottom: 10px; padding: 8px 12px; background: #e8e8e8; border-radius: 8px; max-width: 85%;">
+                            <div style="font-size: 0.7rem; color: #666; margin-bottom: 4px;">AI Assistant</div>
+                            <div>Hello! I can help you analyze what's happening in this camera feed. Ask me questions like:
+                                <ul style="margin: 8px 0 0 16px; padding: 0; font-size: 0.9rem;">
+                                    <li>"What do you see right now?"</li>
+                                    <li>"How many people are in the scene?"</li>
+                                    <li>"Is there any suspicious activity?"</li>
+                                    <li>"Describe the current scene"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Chat Input -->
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="chat-input"
+                               placeholder="Ask about detections, count objects, describe scene..."
+                               style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                               onkeypress="if(event.key === 'Enter') Chat.sendMessage()">
+                        <button onclick="Chat.sendMessage()" class="btn btn-primary" id="chat-send" style="padding: 10px 20px;">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar: Modules & Config -->
@@ -83,8 +123,8 @@
                     <h2 class="card-title">Quick Actions</h2>
                 </div>
                 <div style="display: grid; gap: 0.5rem;">
-                    <button class="btn btn-primary" onclick="alert('Coming soon')">Restart Service</button>
-                    <button class="btn" style="border: 1px solid #ccc;" onclick="alert('Coming soon')">Download Logs</button>
+                    <button class="btn btn-primary" id="btn-restart" onclick="Actions.restartService()">Restart Service</button>
+                    <button class="btn" style="border: 1px solid #ccc;" id="btn-logs" onclick="Actions.downloadLogs()">Download Logs</button>
                 </div>
             </div>
         </div>
@@ -92,6 +132,8 @@
 
     <script src="js/status.js"></script>
     <script src="js/detections.js"></script>
+    <script src="js/actions.js"></script>
+    <script src="js/chat.js"></script>
 </body>
 </html>
 

@@ -46,9 +46,19 @@
           "access": "viewer",
           "name": "config",
           "type": "fastCgi"
+        },
+        {
+          "access": "viewer",
+          "name": "app_status",
+          "type": "fastCgi"
+        },
+        {
+          "access": "viewer",
+          "name": "logs",
+          "type": "fastCgi"
         }
       ],
-      "settingPage": "mqtt.html"
+      "settingPage": "index.html"
     }
   }
 }
